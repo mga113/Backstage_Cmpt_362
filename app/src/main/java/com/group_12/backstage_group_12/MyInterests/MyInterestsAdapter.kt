@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.group_12.backstage_group_12.R
 
 class MyInterestsAdapter(
-    private var events: List<Event>
+    private var events: MutableList<Event>
 ) : RecyclerView.Adapter<MyInterestsAdapter.EventViewHolder>() {
 
     class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -38,4 +38,10 @@ class MyInterestsAdapter(
     }
 
     override fun getItemCount(): Int = events.size
+
+    fun filterList(filtered: List<Event>) {
+        events.clear()
+        events.addAll(filtered)
+        notifyDataSetChanged()
+    }
 }

@@ -6,47 +6,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5"
+    android:focusableInTouchMode="false"
     tools:context=".MyInterests.MyInterestsFragment">
 
     <TextView
         android:id="@+id/appTitle"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:background="#B285FF"
-        android:layout_marginTop="24dp"
         android:fontFamily="sans-serif-medium"
         android:text="My Interests"
         android:textColor="#FFFFFF"
-        android:textSize="30sp"
-        android:textStyle="bold|italic"
-        android:paddingLeft="20dp"/>
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:padding="16dp"
+        android:gravity="center_vertical" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:focusable="false"
+        android:clickable="false">
 
-        <EditText
-            android:id="@+id/searchEdit"
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:iconifiedByDefault="false"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:clickable="true"
+            app:queryHint="Search events..."
             android:background="@android:color/transparent"
-            android:drawablePadding="12dp"
-            android:hint="Search"
-            android:padding="12dp"
-            android:textColorHint="#999999" />
+            android:padding="4dp"
+            android:layout_margin="8dp" />
     </androidx.cardview.widget.CardView>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_marginStart="15dp"
         android:id="@+id/recyclerViewInterests"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
         android:scrollbars="vertical"
+        android:paddingHorizontal="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
     <TextView
@@ -57,7 +63,7 @@
         android:padding="16dp"
         android:text="No interests added yet."
         android:visibility="gone"
-        android:textColor="?attr/colorOnBackground"
+        android:textColor="#555555"
         android:textSize="16sp" />
 
 </LinearLayout>
