@@ -1,6 +1,5 @@
 package com.group_12.backstage_group_12.MyInterests
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +9,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.firebase.auth.FirebaseAuth
 import com.group_12.backstage_group_12.R
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MyInterestsFragment : Fragment() {
@@ -21,11 +19,12 @@ class MyInterestsFragment : Fragment() {
     private lateinit var adapter: MyInterestsAdapter
     private lateinit var emptyTextView: TextView
     private lateinit var searchView: SearchView
+
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-    private val eventList = mutableListOf<Event>()
-    private val filteredList = mutableListOf<Event>()
 
+    private val eventList = mutableListOf<Event>()        // all events
+    private val filteredList = mutableListOf<Event>()     // filtered events
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,17 +37,12 @@ class MyInterestsFragment : Fragment() {
         emptyTextView = view.findViewById(R.id.emptyTextView)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = MyInterestsAdapter(eventList)
+        adapter = MyInterestsAdapter(filteredList)
         recyclerView.adapter = adapter
 
-        searchView.setIconifiedByDefault(false)
-        searchView.clearFocus()
-        searchView.isFocusable = true
-        searchView.isFocusableInTouchMode = true
-        searchView.requestFocusFromTouch()
-
-        loadInterests()
         setupSearch()
+        loadDummyInterests()
+
         return view
     }
 
@@ -71,48 +65,31 @@ class MyInterestsFragment : Fragment() {
                         }
                     )
                 }
+
                 adapter.notifyDataSetChanged()
-                emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+                emptyTextView.visibility =
+                    if (filteredList.isEmpty()) View.VISIBLE else View.GONE
 
                 return true
             }
         })
     }
 
-    private fun loadInterests() {
-
+    private fun loadDummyInterests() {
         eventList.clear()
         eventList.add(Event("Coldplay Concert", "BC Place Stadium", "2025-07-10"))
         eventList.add(Event("Drake Tour", "Rogers Arena", "2025-08-15"))
         eventList.add(Event("Taylor Swift Eras Tour", "BC Place", "2025-09-01"))
         eventList.add(Event("Jazz Festival", "Granville Island", "2025-06-20"))
 
+        filteredList.clear()
+        filteredList.addAll(eventList)
         adapter.notifyDataSetChanged()
         emptyTextView.visibility = View.GONE
+    }
 
-
-        val userId = auth.currentUser?.uid ?: return
-        db.collection("users")
-            .document(userId)
-            .collection("interests")
-            .get()
-            .addOnSuccessListener { result ->
-                eventList.clear()
-                for (doc in result) {
-                    val event = doc.toObject(Event::class.java)
-                    eventList.add(event)
-                }
-                filteredList.clear()
-                filteredList.addAll(eventList)
-                adapter.notifyDataSetChanged()
-
-                emptyTextView.visibility =
-                    if (eventList.isEmpty()) View.VISIBLE else View.GONE
-            }
-            .addOnFailureListener {
-                emptyTextView.text = "Failed to load data."
-                emptyTextView.visibility = View.VISIBLE
-            }
-
+    override fun onResume() {
+        super.onResume()
+        searchView.clearFocus()
     }
 }
