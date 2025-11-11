@@ -32,13 +32,7 @@ class ExploreFragment : Fragment() {
 
         fetchEvents() // loads concerts by default when Explore opens
 
-        val searchInput = view.findViewById<EditText>(R.id.searchInput)
-        val searchButton = view.findViewById<ImageButton>(R.id.searchButton)
 
-        searchButton.setOnClickListener {
-            val query = searchInput.text.toString()
-            if (query.isNotEmpty()) fetchEvents(query)
-        }
 
         return view
     }

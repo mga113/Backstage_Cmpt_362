@@ -6,9 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".Explore.ExploreFragment">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:background="#F5F5F5"/>
+
     <LinearLayout
         android:orientation="vertical"
-        android:background="#F5F5F5"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -16,19 +20,20 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white">
+            >
+
             <TextView
                 android:id="@+id/appTitle"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="24dp"
-                android:background="#B285FF"
+                android:background="@color/deep_sea_blue"
                 android:fontFamily="sans-serif-medium"
+                android:paddingLeft="16dp"
                 android:text="Backstage"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/tropical_teal"
                 android:textSize="30sp"
-                android:textStyle="bold|italic"
-                android:paddingLeft="20dp"/>
+                android:textStyle="bold|italic" />
         </RelativeLayout>
         <!-- Search bar -->
         <!-- Concert Search Section -->
@@ -38,57 +43,48 @@
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
             android:paddingTop="12dp"
-            android:paddingBottom="8dp"
-            android:background="#F5F5F5">
+            >
 
             <TextView
                 android:id="@+id/searchLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.05"
                 android:text="SEARCH CONCERTS"
                 android:textAllCaps="true"
+                android:textColor="@color/sunset_gold"
                 android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="#7C4DFF"
-                android:letterSpacing="0.05"
-                android:layout_marginBottom="4dp"
-                android:layout_height="wrap_content"
-                 android:layout_width="match_parent"/>
+                android:textStyle="bold" />
 
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/rounded_searchbar"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="12dp">
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp">
 
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@android:drawable/ic_menu_search"
-                    app:tint="#7C4DFF" />
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    android:clickable="false"
+                    android:focusable="false">
 
-                <EditText
-                    android:id="@+id/searchInput"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:hint="Artist, Event or Venue"
-                    android:background="@android:color/transparent"
-                    android:textColor="#000000"
-                    android:textColorHint="#9C9C9C"
-                    android:imeOptions="actionSearch"
-                    android:inputType="text" />
-
-                <ImageButton
-                    android:id="@+id/searchButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:contentDescription="Search"
-                    android:padding="6dp"
-                    android:src="@drawable/ic_chevron_right"
-                    app:tint="#7C4DFF" />
-            </LinearLayout>
+                    <androidx.appcompat.widget.SearchView
+                        android:id="@+id/searchBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:iconifiedByDefault="false"
+                        android:queryHint="Artist, Event or Venue"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:clickable="true"
+                        android:background="@android:color/white"
+                        android:padding="8dp"
+                        android:layout_margin="4dp"
+                        app:queryBackground="@android:color/transparent"
+                        app:iconifiedByDefault="false" />
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
         </LinearLayout>
 
 

@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="#FFFFFF"
     android:layout_margin="8dp"
@@ -12,7 +13,8 @@
         android:id="@+id/eventImage"
         android:layout_width="match_parent"
         android:layout_height="180dp"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        app:tint="#ffffff"/>
 
     <TextView
         android:id="@+id/eventName"

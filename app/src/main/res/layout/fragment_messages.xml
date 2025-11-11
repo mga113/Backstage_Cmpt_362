@@ -3,9 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
     android:orientation="vertical">
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:background="#ffffff"
+        />
     <!-- Header -->
     <RelativeLayout
         android:layout_width="match_parent"
@@ -15,15 +18,14 @@
         <TextView
             android:id="@+id/appTitle"
             android:layout_width="match_parent"
-            android:layout_marginTop="24dp"
             android:layout_height="40dp"
-            android:background="#B285FF"
+            android:background="@color/deep_sea_blue"
             android:fontFamily="sans-serif-medium"
+            android:paddingLeft="16dp"
             android:text="Messages"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/light_teal"
             android:textSize="30sp"
-            android:textStyle="bold|italic"
-            android:paddingLeft="20dp"/>
+            android:textStyle="bold|italic" />
 
     </RelativeLayout>
 
@@ -52,7 +54,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@android:color/white" />
+
+         />
 
     <!-- Bottom Navigation -->
     <LinearLayout
@@ -67,7 +70,7 @@
             android:layout_width="0dp"
             android:layout_height="24dp"
             android:layout_weight="1"
-            app:tint="#000000" />
+            app:tint="#ffffff" />
 
         <ImageView
             android:layout_width="0dp"

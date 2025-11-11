@@ -19,5 +19,26 @@
 <color name="tropical_teal">#00CED1</color>           <!-- Primary (Tropical Teal) -->
 <color name="light_teal">#32E6E8</color>           <!-- Lighter Teal (Highlight) -->
 
-<color name="nav_ripple">#19424C</color>        <!-- Ripple/Overlay on dark -->
+<color name="nav_ripple">#FFD700</color>        <!-- Ripple/Overlay on dark -->
+
+    <color name="colorPrimary">#00CED1</color>        <!-- Tropical Teal -->
+    <color name="colorPrimaryVariant">#32E6E8</color> <!-- Lighter Teal -->
+    <color name="colorSecondary">#FF7F50</color>      <!-- Coral -->
+    <color name="colorSecondaryVariant">#FF966C</color>
+    <color name="colorTertiary">#FFD700</color>       <!-- Sunset Gold -->
+    <color name="colorTertiaryVariant">#FFE55C</color>
+
+    <color name="colorBackground">#0F1E26</color>     <!-- Midnight Teal -->
+    <color name="colorSurface">#1C2E36</color>        <!-- Deep Sea Blue -->
+    <color name="colorSurfaceVariant">#243945</color>
+    <color name="colorError">#FF4F4F</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="colorOnTertiary">#FFFFFF</color>
+    <color name="colorOnBackground">#FFFFFF</color>
+    <color name="colorOnSurface">#FFFFFF</color>
+    <color name="colorOnError">#FFFFFF</color>
+    <color name="colorRipple">#19424C</color>      <!-- Subtle teal overlay -->
+    <color name="colorOutline">#3A5059</color>     <!-- Soft blue-grey -->
+
 </resources>

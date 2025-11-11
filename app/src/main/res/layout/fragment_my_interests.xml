@@ -5,22 +5,30 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
     android:descendantFocusability="beforeDescendants"
     tools:context=".MyInterests.MyInterestsFragment">
-
     <TextView
-        android:id="@+id/appTitle"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:background="#ffffff"
+        />
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#B285FF"
-        android:fontFamily="sans-serif-medium"
-        android:text="My Interests"
-        android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:padding="16dp"
-        android:gravity="center_vertical" />
+        android:background="@android:color/white">
+
+        <TextView
+            android:id="@+id/appTitle"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/deep_sea_blue"
+            android:fontFamily="sans-serif-medium"
+            android:paddingLeft="16dp"
+            android:text="My Interests"
+            android:textColor="@color/light_teal"
+            android:textSize="30sp"
+            android:textStyle="bold|italic" />
+    </RelativeLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -57,8 +65,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingHorizontal="8dp"
         android:clipToPadding="false"
+        android:paddingHorizontal="8dp"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
