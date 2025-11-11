@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="purple_40">#6650A4</color>
-    <color name="purple_80">#D0BCFF</color>
-    <color name="purple_grey_40">#625B71</color>
-    <color name="purple_grey_80">#CCC2DC</color>
-    <color name="pink_40">#7D5260</color>
-    <color name="pink_80">#EFB8C8</color>
+<!--<resources>-->
+<!--    <color name="purple_40">#6650A4</color>-->
+<!--    <color name="purple_80">#D0BCFF</color>-->
+<!--    <color name="purple_grey_40">#625B71</color>-->
+<!--    <color name="purple_grey_80">#CCC2DC</color>-->
+<!--    <color name="pink_40">#7D5260</color>-->
+<!--    <color name="pink_80">#EFB8C8</color>-->
 
-    <color name="nav_ripple">#E0D7F5</color>
+<!--    <color name="nav_ripple">#E0D7F5</color>-->
+<!--    -->
+<!--    -->
+<!--</resources>-->
+<resources>
+<color name="deep_sea_blue">#1C2E36</color>         <!-- Surface -->
+<color name="dark_blue">#0F1E26</color>         <!-- Background -->
+<color name="coral">#FF7F50</color>    <!-- Secondary (Coral) -->
+<color name="sunset_gold">#FFD700</color>    <!-- Accent (Sunset Gold) -->
+<color name="tropical_teal">#00CED1</color>           <!-- Primary (Tropical Teal) -->
+<color name="light_teal">#32E6E8</color>           <!-- Lighter Teal (Highlight) -->
+
+<color name="nav_ripple">#19424C</color>        <!-- Ripple/Overlay on dark -->
 </resources>
