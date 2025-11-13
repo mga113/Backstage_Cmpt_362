@@ -5,9 +5,9 @@ import './HeroSection.css';
 
 function HeroSection() {
   return (
-    <div className='hero-container'>
-      <video src='/videos/video-1.mp4' autoPlay loop muted />
-      <h1>ADVENTURE AWAITS</h1>
+    <section id='home' className='hero-container'>
+      <video src='/videos/backstage_home_video.mp4' autoPlay loop muted />
+      <h1>WHERE MUSIC MEETS CONNECTION</h1>
       <p>What are you waiting for?</p>
       <div className='hero-btns'>
         <Button
@@ -15,18 +15,35 @@ function HeroSection() {
           buttonStyle='btn--outline'
           buttonSize='btn--large'
         >
-          GET STARTED
+          ZIPPED CODE <i className='fas fa-download' />
         </Button>
+
         <Button
           className='btns'
-          buttonStyle='btn--primary'
+          buttonStyle='btn--outline'
           buttonSize='btn--large'
-          onClick={console.log('hey')}
+          href="https://youtu.be/Zx8qAwGfUdA"
         >
-          WATCH TRAILER <i className='far fa-play-circle' />
+          WATCH PITCH <i className='far fa-play-circle' />
+        </Button>
+
+        <Button
+          className='btns'
+          buttonStyle='btn--outline'
+          buttonSize='btn--large'
+          href="https://youtu.be/7225EoVwszQ"
+        >
+          WATCH FINAL DEMO <i className='far fa-play-circle' />
+        </Button>
+
+        <Button
+          className='btns'
+          buttonSize='btn--large'
+        >
+          Download APK <i className='fas fa-download' />
         </Button>
       </div>
-    </div>
+    </section>
   );
 }
 
