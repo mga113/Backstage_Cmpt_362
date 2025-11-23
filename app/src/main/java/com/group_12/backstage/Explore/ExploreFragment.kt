@@ -34,8 +34,13 @@ class ExploreFragment : Fragment() {
     private val events = mutableListOf<Event>()
     private lateinit var btnFilterDate: Button
     private lateinit var genreChipGroup: ChipGroup
-    private var searchRunnable: Runnable? = null
-    private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
+
+    private var startDate: String? = null
+    private var endDate: String? = null
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var searchJob: Runnable? = null
+
+
 
 
 
@@ -59,10 +64,34 @@ class ExploreFragment : Fragment() {
                 fetchEvents(query)  // fetch events matching the query
                 return true
             }
-            override fun onQueryTextChange(newText: String): Boolean {
-                // filter as the user types.
-                return false
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val query = newText ?: ""
+
+                // Cancel previous jobs
+                searchJob?.let { handler.removeCallbacks(it) }
+
+                if (query.isEmpty()) {
+                    events.clear()
+                    adapter.updateEvents(events.toMutableList())
+                    fetchEvents()
+                }
+
+                // Debounce: run 350ms after user stops typing
+                searchJob = Runnable {
+                    fetchEvents(
+                        query = query,
+                        genre = getSelectedGenre(),
+                        startDate = startDate,
+                        endDate = endDate
+                    )
+                }
+
+                handler.postDelayed(searchJob!!, 350)
+
+                return true
             }
+
+
         })
 
         genreChipGroup = view.findViewById<ChipGroup>(R.id.genreChipGroup)
@@ -97,8 +126,8 @@ class ExploreFragment : Fragment() {
                     val endMillis = selection.second ?: selection.first  // in case only one date selected
                     // Format to YYYY-MM-DD (the format Ticketmaster API expects)
                     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                    val startDate = dateFormat.format(Date(startMillis))
-                    val endDate = dateFormat.format(Date(endMillis))
+                    startDate = dateFormat.format(Date(startMillis))
+                    endDate = dateFormat.format(Date(endMillis))
                     // Call fetchEvents with the selected date range
                     val currentQuery = searchView.query.toString()
                     fetchEvents(currentQuery, getSelectedGenre(), startDate, endDate)
@@ -121,30 +150,43 @@ class ExploreFragment : Fragment() {
             null
         }
     }
-    private fun fetchEvents(query: String = "", genre: String? = null,
-                            startDate: String? = null, endDate: String? = null) {
+    private fun fetchEvents(
+        query: String = "",
+        genre: String? = null,
+        startDate: String? = null,
+        endDate: String? = null
+    ) {
         val apiKey = "A9nGiKzxYRZTGQfiUG0lK0JlNkZJ8FXx"
         val baseUrl = "https://app.ticketmaster.com/discovery/v2/events.json"
 
-        // "segmentName=Music" restricts results to concerts/music events
         val encodedQuery = Uri.encode(query)
-        var url = "$baseUrl?apikey=$apiKey&countryCode=CA&segmentName=Music&keyword=$encodedQuery"
-        if (startDate != null) {
-            // If endDate is not provided and only a single date filter, use startDate as endDate
-            val end = endDate ?: startDate
-            url += "&startDateTime=${startDate}T00:00:00Z&endDateTime=${end}T23:59:59Z"
-        }
+
+        // Base
+        var url = "$baseUrl?apikey=$apiKey&countryCode=CA&segmentName=Music"
+
+        // If user typed something → search
         if (query.isNotEmpty()) {
-            url += "&keyword=$encodedQuery"
+            url += "&keyword=${Uri.encode(query)}"
+        } else {
+            // User cleared search → show popular/default events
+            url += "&size=50"
         }
 
-        // Location-specific search
-        if (query.isNotEmpty()) {
-            url += "&city=$encodedQuery"
-        }
+
+
+        // Genre filter
         if (genre != null) {
             url += "&classificationName=${Uri.encode(genre)}"
         }
+
+        // Date filter
+        if (startDate != null) {
+            val end = endDate ?: startDate
+            url += "&startDateTime=${startDate}T00:00:00Z&endDateTime=${end}T23:59:59Z"
+        }
+
+        Log.d("API_URL", url)
+
 
         val request = JsonObjectRequest(
             Request.Method.GET,
@@ -198,10 +240,11 @@ class ExploreFragment : Fragment() {
                     events.add(Event(id, name, formattedDate, venue, imageUrl, genre))
                 }
 
-// update adapter
-                adapter.updateEvents(events)
+                // update adapter
+                adapter.updateEvents(events.toMutableList())
 
-            } catch (ex: Exception) {
+
+                } catch (ex: Exception) {
                     Log.e("API_PARSE", "Error parsing events: ${ex.message}")
                 }
             },
