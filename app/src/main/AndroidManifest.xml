@@ -3,6 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.group_12.backstage">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Fix for "Unknown calling package name 'com.google.android.gms'" -->
+    <queries>
+        <package android:name="com.google.android.gms" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -15,6 +23,9 @@
 
         <activity android:name=".Authentication.RegisterActivity" />
         <activity android:name=".Authentication.LoginActivity" />
+        <activity android:name=".Chat.DirectMessageActivity"
+                  android:label="Chat"
+                  android:parentActivityName=".MainActivity"/>
 
         <!-- Splash Screen Activity (Launcher) -->
         <activity

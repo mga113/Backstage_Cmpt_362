@@ -1,0 +1,55 @@
+package com.group_12.backstage.Chat
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.group_12.backstage.R
+
+class UserAdapter(
+    private var userList: List<User>,
+    private val onUserClick: (User) -> Unit
+) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
+
+    class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val userName: TextView = itemView.findViewById(R.id.userNameTextView)
+        val userEmail: TextView = itemView.findViewById(R.id.userEmailTextView)
+        val userImage: ImageView = itemView.findViewById(R.id.userProfileImage)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_user, parent, false)
+        return UserViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+        val user = userList[position]
+        holder.userName.text = user.name.ifEmpty { "Unknown" }
+        holder.userEmail.text = user.username // Using username field as email for now based on User.kt usage or actual email if available
+        
+        // Load image or placeholder
+        if (user.profileImageUrl.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(user.profileImageUrl)
+                .placeholder(R.drawable.ic_person)
+                .into(holder.userImage)
+        } else {
+            holder.userImage.setImageResource(R.drawable.ic_person)
+        }
+
+        holder.itemView.setOnClickListener {
+            onUserClick(user)
+        }
+    }
+
+    override fun getItemCount(): Int = userList.size
+
+    fun updateList(newList: List<User>) {
+        userList = newList
+        notifyDataSetChanged()
+    }
+}
