@@ -9,23 +9,12 @@ import com.group_12.backstage.R
 
 class MessageAdapter(
     private val messages: List<Message>,
-    private val onItemClick: (Message) -> Unit
+    private val onClick: (Message) -> Unit
 ) : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
 
-    inner class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val name: TextView = view.findViewById(R.id.nameText)
-        val lastMessage: TextView = view.findViewById(R.id.lastMessageText)
-        val time: TextView = view.findViewById(R.id.timeText)
-
-        fun bind(message: Message) {
-            name.text = message.name
-            lastMessage.text = message.lastMessage
-            time.text = message.time
-
-            itemView.setOnClickListener {
-                onItemClick(message)
-            }
-        }
+    class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val senderTextView: TextView = itemView.findViewById(R.id.senderTextView)
+        val messageTextView: TextView = itemView.findViewById(R.id.messageTextView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -35,8 +24,15 @@ class MessageAdapter(
     }
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
-        holder.bind(messages[position])
+        val message = messages[position]
+        holder.senderTextView.text = message.sender
+        holder.messageTextView.text = message.message
+
+        holder.itemView.setOnClickListener {
+            onClick(message)
+        }
     }
 
-    override fun getItemCount() = messages.size
+    override fun getItemCount(): Int = messages.size
 }
+

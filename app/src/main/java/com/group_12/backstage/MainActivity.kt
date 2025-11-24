@@ -1,12 +1,14 @@
 package com.group_12.backstage
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -35,5 +37,13 @@ class MainActivity : AppCompatActivity() {
         )
         binding.bottomNavigationView.itemRippleColor =
             ContextCompat.getColorStateList(this, R.color.nav_ripple)
+
+
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("test").document("hello")
+            .set(mapOf("msg" to "Hello Firestore"))
+            .addOnSuccessListener { Log.d("Firestore", "Success") }
+            .addOnFailureListener { e -> Log.e("Firestore", "Fail", e) }
     }
 }

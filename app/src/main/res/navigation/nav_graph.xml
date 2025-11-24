@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/navigation_chat"
-        android:name="com.group_12.backstage.Chat.MessagesFrag"
+        android:name="com.group_12.backstage.Chat.ChatFragment"
         android:label="Chat" />
 
     <fragment
