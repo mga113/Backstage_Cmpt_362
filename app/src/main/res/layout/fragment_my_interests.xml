@@ -5,30 +5,22 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:descendantFocusability="beforeDescendants"
     tools:context=".MyInterests.MyInterestsFragment">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="24dp"
-        android:background="#ffffff"
-        />
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white">
 
-        <TextView
-            android:id="@+id/appTitle"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@color/deep_sea_blue"
-            android:fontFamily="sans-serif-medium"
-            android:paddingLeft="16dp"
-            android:text="My Interests"
-            android:textColor="@color/light_teal"
-            android:textSize="30sp"
-            android:textStyle="bold|italic" />
-    </RelativeLayout>
+    <TextView
+        android:id="@+id/appTitle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/deep_sea_blue"
+        android:fontFamily="sans-serif-medium"
+        android:paddingLeft="16dp"
+        android:gravity="center_vertical"
+        android:text="My Interests"
+        android:textColor="@color/light_teal"
+        android:textSize="24sp"
+        android:textStyle="bold|italic" />
 
     <FrameLayout
         android:layout_width="match_parent"

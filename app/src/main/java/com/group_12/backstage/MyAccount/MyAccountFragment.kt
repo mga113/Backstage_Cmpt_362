@@ -1,5 +1,6 @@
 package com.group_12.backstage.MyAccount
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.group_12.backstage.Authentication.LoginActivity
 import com.group_12.backstage.databinding.FragmentMyAccountBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -39,7 +42,6 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
             DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
         )
 
-        // progress bar only for demo async loads
         binding.progress.isVisible = false
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -47,14 +49,31 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Refresh list to check for Auth changes (e.g. if coming back from LoginActivity)
+        vm.refreshAuthStatus()
+    }
+
     // --- Navigator callbacks ---
     override fun onSignInClicked() {
-        Snackbar.make(binding.root, "TODO: Launch Firebase Auth flow", Snackbar.LENGTH_SHORT).show()
-        // e.g., startActivity(FirebaseAuthUI.getInstance()...) or your custom screen
+        // Launch LoginActivity
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        startActivity(intent)
+    }
+
+    override fun onSignOutClicked() {
+        FirebaseAuth.getInstance().signOut()
+        Snackbar.make(binding.root, "Signed out successfully", Snackbar.LENGTH_SHORT).show()
+        vm.refreshAuthStatus()
     }
 
     override fun onChevronClicked(id: String) {
-        Snackbar.make(binding.root, "Open: $id", Snackbar.LENGTH_SHORT).show()
+        if (id == "sign_out") {
+            onSignOutClicked()
+        } else {
+            Snackbar.make(binding.root, "Open: $id", Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     override fun onSwitchChanged(id: String, enabled: Boolean) {

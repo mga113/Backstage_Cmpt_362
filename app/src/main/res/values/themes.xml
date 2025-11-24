@@ -48,7 +48,8 @@
         <item name="colorControlHighlight">@color/colorRipple</item>
 
         <!-- Status bar + Navigation bar -->
-        <item name="android:statusBarColor">@color/sunset_gold</item>
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@color/colorBackground</item>
 <!--        <item name="android:statusBarContrastEnforced">false</item>-->
 <!--        <item name="android:navigationBarContrastEnforced">false</item>-->

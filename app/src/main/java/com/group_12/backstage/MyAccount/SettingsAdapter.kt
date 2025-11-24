@@ -1,6 +1,7 @@
 package com.group_12.backstage.MyAccount
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -53,8 +54,16 @@ class SettingsAdapter(
     class HeaderVH(private val b: ItemHeaderWelcomeBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(item: SettingsItem.Header, nav: MyAccountNavigator) {
             b.title.text = "My Account"
-            b.subtitle.text = "Welcome to ${item.welcomeBrand}"
-            b.signInButton.setOnClickListener { nav.onSignInClicked() }
+            // If signed in, show just the brand/name. If not, show "Welcome to..."
+            if (item.showSignIn) {
+                b.subtitle.text = "Welcome to ${item.welcomeBrand}"
+                b.signInButton.visibility = View.VISIBLE
+                b.signInButton.setOnClickListener { nav.onSignInClicked() }
+            } else {
+                b.subtitle.text = "Hi, ${item.welcomeBrand}"
+                b.signInButton.visibility = View.GONE
+                b.signInButton.setOnClickListener(null)
+            }
         }
     }
 
@@ -62,7 +71,7 @@ class SettingsAdapter(
         fun bind(item: SettingsItem.SectionTitle) {
             b.sectionTitle.text = item.title
             b.badge.text = item.badge ?: ""
-            b.badge.visibility = if (item.badge == null) android.view.View.GONE else android.view.View.VISIBLE
+            b.badge.visibility = if (item.badge == null) View.GONE else View.VISIBLE
         }
     }
 
@@ -70,7 +79,13 @@ class SettingsAdapter(
         fun bind(item: SettingsItem.Chevron, nav: MyAccountNavigator) {
             b.icon.setImageResource(item.icon)
             b.title.text = item.title
-            b.root.setOnClickListener { nav.onChevronClicked(item.id) }
+            b.root.setOnClickListener { 
+                if (item.id == "sign_out") {
+                    nav.onSignOutClicked()
+                } else {
+                    nav.onChevronClicked(item.id) 
+                }
+            }
         }
     }
 
@@ -91,7 +106,7 @@ class SettingsAdapter(
             b.title.text = item.title
             b.value.text = item.value
             b.edit.setOnClickListener { nav.onEditClicked(item.id) }
-            b.edit.visibility = if (item.showEdit) android.view.View.VISIBLE else android.view.View.GONE
+            b.edit.visibility = if (item.showEdit) View.VISIBLE else View.GONE
         }
     }
 

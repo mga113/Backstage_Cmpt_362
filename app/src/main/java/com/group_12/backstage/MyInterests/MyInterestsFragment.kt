@@ -22,7 +22,6 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.group_12.backstage.R
 
 class MyInterestsFragment : Fragment() {
@@ -54,10 +53,18 @@ class MyInterestsFragment : Fragment() {
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         
-        // Pass a lambda for item clicks
-        adapter = MyInterestsAdapter(filteredList) { event, imageView ->
-             navigateToEventDetails(event, imageView)
-        }
+        // Adapter with 2 callbacks: 
+        // 1. Item Click (Navigation)
+        // 2. Status Change (Firestore Update)
+        adapter = MyInterestsAdapter(
+            filteredList,
+            onItemClick = { event, imageView ->
+                navigateToEventDetails(event, imageView)
+            },
+            onStatusChange = { event, newStatus ->
+                updateEventStatus(event, newStatus)
+            }
+        )
         recyclerView.adapter = adapter
 
         setupSearch()
@@ -68,13 +75,25 @@ class MyInterestsFragment : Fragment() {
         return view
     }
 
-    private fun navigateToEventDetails(event: Event, imageView: ImageView) {
-        // Create unique transition name
-        val transitionName = "event_image_${event.id}"
+    private fun updateEventStatus(event: Event, newStatus: String) {
+        val currentUser = auth.currentUser ?: return
         
-        val extras = FragmentNavigatorExtras(
-            imageView to transitionName
-        )
+        // Optimistic update isn't strictly necessary because the SnapshotListener 
+        // will fire almost instantly, but we can verify the doc exists first.
+        
+        db.collection("users")
+            .document(currentUser.uid)
+            .collection("my_events")
+            .document(event.id)
+            .update("status", newStatus)
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to update status: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun navigateToEventDetails(event: Event, imageView: ImageView) {
+        val transitionName = "event_image_${event.id}"
+        val extras = FragmentNavigatorExtras(imageView to transitionName)
 
         val bundle = bundleOf(
             "eventId" to event.id,
@@ -94,7 +113,7 @@ class MyInterestsFragment : Fragment() {
     }
 
     private fun setupFilterChips() {
-        chipGroup.setOnCheckedChangeListener { group, checkedId ->
+        chipGroup.setOnCheckedChangeListener { _, _ ->
             val query = searchView.query.toString().trim().lowercase()
             filterList(query)
         }
@@ -102,21 +121,14 @@ class MyInterestsFragment : Fragment() {
 
     private fun setupSwipeToDelete() {
         val swipeHandler = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                return false
-            }
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val eventToDelete = filteredList[position]
                 deleteEvent(eventToDelete, position)
             }
-
+            
             override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
                 if (viewHolder != null) {
                     val foregroundView = viewHolder.itemView.findViewById<View>(R.id.view_foreground)
@@ -125,13 +137,8 @@ class MyInterestsFragment : Fragment() {
             }
 
             override fun onChildDrawOver(
-                c: Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder?,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
+                c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder?,
+                dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean
             ) {
                 if (viewHolder != null) {
                     val foregroundView = viewHolder.itemView.findViewById<View>(R.id.view_foreground)
@@ -145,38 +152,25 @@ class MyInterestsFragment : Fragment() {
             }
 
             override fun onChildDraw(
-                c: Canvas,
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
-                actionState: Int,
-                isCurrentlyActive: Boolean
+                c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean
             ) {
                 val foregroundView = viewHolder.itemView.findViewById<View>(R.id.view_foreground)
                 getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY, actionState, isCurrentlyActive)
             }
         }
-
-        val itemTouchHelper = ItemTouchHelper(swipeHandler)
-        itemTouchHelper.attachToRecyclerView(recyclerView)
+        ItemTouchHelper(swipeHandler).attachToRecyclerView(recyclerView)
     }
 
     private fun deleteEvent(event: Event, position: Int) {
-        // 1. Remove from lists locally to reflect swipe immediately
         filteredList.removeAt(position)
         eventList.remove(event)
         adapter.notifyItemRemoved(position)
         
-        // Check if list is empty to show empty view
-        if (filteredList.isEmpty()) {
-            emptyTextView.visibility = View.VISIBLE
-        }
+        if (filteredList.isEmpty()) emptyTextView.visibility = View.VISIBLE
 
-        // 2. Show Snackbar with Undo
         Snackbar.make(recyclerView, "${event.title} removed", Snackbar.LENGTH_LONG)
             .setAction("UNDO") {
-                // Undo Action: Restore item
                 filteredList.add(position, event)
                 eventList.add(event)
                 adapter.notifyItemInserted(position)
@@ -184,7 +178,6 @@ class MyInterestsFragment : Fragment() {
             }
             .addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, eventId: Int) {
-                    // If not dismissed via UNDO action, proceed with actual deletion
                     if (eventId != DISMISS_EVENT_ACTION) {
                         permanentlyDeleteEvent(event)
                     }
@@ -194,40 +187,19 @@ class MyInterestsFragment : Fragment() {
     }
 
     private fun permanentlyDeleteEvent(event: Event) {
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-             if (event.id.isNotEmpty()) {
-                 db.collection("users")
-                    .document(currentUser.uid)
-                    .collection("my_events")
-                    .document(event.id)
-                    .delete()
-                    .addOnFailureListener { e ->
-                         Toast.makeText(context, "Failed to delete from server: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-             } else {
-                 // Fallback to title
-                  db.collection("users")
-                    .document(currentUser.uid)
-                    .collection("my_events")
-                    .whereEqualTo("title", event.title)
-                    .get()
-                    .addOnSuccessListener { documents ->
-                        for (document in documents) {
-                            document.reference.delete()
-                        }
-                    }
-             }
+        val currentUser = auth.currentUser ?: return
+        if (event.id.isNotEmpty()) {
+             db.collection("users").document(currentUser.uid)
+                .collection("my_events").document(event.id)
+                .delete()
         }
     }
 
     private fun setupSearch() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = false
-
             override fun onQueryTextChange(newText: String?): Boolean {
-                val query = newText?.trim()?.lowercase() ?: ""
-                filterList(query)
+                filterList(newText?.trim()?.lowercase() ?: "")
                 return true
             }
         })
@@ -238,25 +210,18 @@ class MyInterestsFragment : Fragment() {
         val filterStatus = when (checkedChipId) {
             R.id.chipGoing -> "going"
             R.id.chipInterested -> "interested"
-            else -> "all" // Default to all
+            else -> "all"
         }
 
         filteredList.clear()
-        
-        val searchFiltered = if (query.isEmpty()) {
-            eventList
-        } else {
-            eventList.filter {
-                it.title.lowercase().contains(query) ||
-                        it.location.lowercase().contains(query) ||
-                        it.date.lowercase().contains(query)
-            }
+        val searchFiltered = if (query.isEmpty()) eventList else eventList.filter {
+            it.title.lowercase().contains(query) ||
+            it.location.lowercase().contains(query) ||
+            it.date.lowercase().contains(query)
         }
 
-        val finalFiltered = if (filterStatus == "all") {
-            searchFiltered
-        } else {
-            searchFiltered.filter { it.status.equals(filterStatus, ignoreCase = true) }
+        val finalFiltered = if (filterStatus == "all") searchFiltered else searchFiltered.filter { 
+            it.status.equals(filterStatus, ignoreCase = true) 
         }
 
         filteredList.addAll(finalFiltered)
@@ -266,16 +231,11 @@ class MyInterestsFragment : Fragment() {
 
     private fun listenForUserEvents() {
         progressBar.visibility = View.VISIBLE 
-        
         val currentUser = auth.currentUser
         if (currentUser == null) {
-            Log.d("MyInterests", "No user logged in. Loading dummy data.")
             loadDummyData()
             return
         }
-
-        Log.d("MyInterests", "Fetching events for User UID: ${currentUser.uid}")
-        Toast.makeText(context, "Checking DB for User: ${currentUser.uid.take(5)}...", Toast.LENGTH_SHORT).show()
 
         db.collection("users")
             .document(currentUser.uid)
@@ -285,68 +245,29 @@ class MyInterestsFragment : Fragment() {
                 
                 if (e != null) {
                     Log.e("MyInterests", "Listen failed.", e)
-                    Toast.makeText(context, "Error loading events: ${e.message}", Toast.LENGTH_LONG).show()
                     return@addSnapshotListener
                 }
 
                 if (snapshots != null) {
-                    Log.d("MyInterests", "Snapshot received! Count: ${snapshots.size()}")
-                    if (snapshots.isEmpty) {
-                         Log.d("MyInterests", "Snapshot is empty.")
-                         // Toast.makeText(context, "No events found in DB", Toast.LENGTH_SHORT).show()
-                    }
-
                     eventList.clear()
                     for (doc in snapshots) {
                         try {
                             val event = doc.toObject(Event::class.java).copy(id = doc.id)
-                            Log.d("MyInterests", "Loaded event: ${event.title}")
                             eventList.add(event)
                         } catch (e: Exception) {
-                            Log.e("MyInterests", "Error parsing document: ${doc.id}", e)
+                            Log.e("MyInterests", "Parse error", e)
                         }
                     }
-                    
-                    // Re-apply filter
-                    val currentQuery = searchView.query.toString().trim().lowercase()
-                    filterList(currentQuery)
-                } else {
-                    Log.d("MyInterests", "Current data: null")
+                    filterList(searchView.query.toString().trim().lowercase())
                 }
             }
     }
 
     private fun loadDummyData() {
+        // Only called if not logged in
         eventList.clear()
-        eventList.add(Event(
-            id = "1",
-            title = "Taylor Swift | The Eras Tour",
-            date = "Dec 06, 2024",
-            location = "BC Place, Vancouver",
-            imageUrl = "https://s1.ticketm.net/dam/a/263/e3ae5095-f7c0-4b21-9f23-106040627263_1830261_TABLET_LANDSCAPE_LARGE_16_9.jpg",
-            status = "going",
-            ticketUrl = "https://www.ticketmaster.ca/event/11005F6EC6B54372"
-        ))
-        eventList.add(Event(
-            id = "2",
-            title = "Coldplay: Music Of The Spheres",
-            date = "Sep 22, 2025",
-            location = "Rogers Arena",
-            imageUrl = "",
-            status = "interested",
-            ticketUrl = "https://www.ticketmaster.com/search?q=Coldplay+Rogers+Arena"
-        ))
-        eventList.add(Event(
-            id = "3",
-            title = "Ed Sheeran: +-=÷x Tour",
-            date = "Aug 15, 2024",
-            location = "BC Place",
-            imageUrl = "",
-            status = "interested",
-            ticketUrl = "https://www.ticketmaster.com/search?q=Ed+Sheeran+BC+Place"
-        ))
-        
-        filterList(searchView.query.toString())
+        eventList.add(Event("1", "Not Logged In", "N/A", "N/A", "", "interested"))
+        filterList("")
         progressBar.visibility = View.GONE
     }
 
