@@ -57,7 +57,12 @@ class RegisterActivity : AppCompatActivity() {
                             "name" to nameText,
                             "email" to emailText,
                             "profileImageUrl" to "",
-                            "bio" to ""
+                            "bio" to "",
+                            //4 additional fields from MyAccount
+                            "receiveNotifications" to false,          // default
+                            "myLocation" to "",                       // default empty
+                            "myCountry" to "",                        // default empty
+                            "locationBasedContent" to false           // default
                         )
                         db.collection("users").document(uid).set(userMap)
                             .addOnFailureListener {

@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.R
+import com.group_12.backstage.UserAccountData.User
+import com.group_12.backstage.UserAccountData.UserAdapter
 
 class ChatFragment : Fragment() {
 

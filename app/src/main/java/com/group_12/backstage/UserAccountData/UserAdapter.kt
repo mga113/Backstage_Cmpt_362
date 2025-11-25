@@ -1,4 +1,4 @@
-package com.group_12.backstage.Chat
+package com.group_12.backstage.UserAccountData
 
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +30,7 @@ class UserAdapter(
         val user = userList[position]
         holder.userName.text = user.name.ifEmpty { "Unknown" }
         holder.userEmail.text = user.username // Using username field as email for now based on User.kt usage or actual email if available
-        
+
         // Load image or placeholder
         if (user.profileImageUrl.isNotEmpty()) {
             Glide.with(holder.itemView.context)
