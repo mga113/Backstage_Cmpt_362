@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/dark_blue">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <!-- Messages Area -->
+    <!-- Toolbar -->
+    <include layout="@layout/toolbar_direct_messages"/>
+
+    <!-- Messages RecyclerView -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -36,7 +36,7 @@
             android:visibility="gone"/>
     </FrameLayout>
 
-    <!-- Input Bar -->
+    <!-- Input bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -63,9 +63,7 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:background="@android:color/transparent"
-            android:src="@drawable/ic_send"
-            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_send"
             android:contentDescription="Send"/>
     </LinearLayout>
-
 </LinearLayout>

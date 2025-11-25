@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -32,6 +32,9 @@ class DirectMessageActivity : AppCompatActivity() {
     private var targetUserName: String? = null
     private var chatId: String? = null
 
+    private lateinit var toolbarUserName: TextView
+    private lateinit var backButton: ImageView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_direct_message)
@@ -39,14 +42,16 @@ class DirectMessageActivity : AppCompatActivity() {
         targetUserId = intent.getStringExtra("targetUserId")
         targetUserName = intent.getStringExtra("targetUserName")
 
-        supportActionBar?.title = targetUserName ?: "Chat"
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         recyclerView = findViewById(R.id.messagesRecyclerView)
         messageEditText = findViewById(R.id.messageEditText)
         sendButton = findViewById(R.id.sendButton)
         emptyChatTextView = findViewById(R.id.emptyChatTextView)
 
+        toolbarUserName = findViewById(R.id.toolbarUserName)
+        backButton = findViewById(R.id.backButton)
+
+        toolbarUserName.text = targetUserName ?: "Chat"
+        backButton.setOnClickListener { onBackPressed() }
 
         setupRecyclerView()
         setupChatId()
@@ -55,7 +60,7 @@ class DirectMessageActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = MessageAdapter(messages) {}
+        adapter = MessageAdapter(messages)
         val layoutManager = LinearLayoutManager(this)
         layoutManager.stackFromEnd = true
         recyclerView.layoutManager = layoutManager
@@ -75,7 +80,7 @@ class DirectMessageActivity : AppCompatActivity() {
             val text = messageEditText.text.toString()
             if (text.isNotBlank()) {
                 val currentUser = auth.currentUser
-                val senderName = currentUser?.displayName ?: "Anonymous"
+                val senderName = currentUser?.displayName ?: currentUser?.email ?: "Anonymous"
                 sendMessage(senderName, text)
                 messageEditText.text.clear()
             }
@@ -102,6 +107,7 @@ class DirectMessageActivity : AppCompatActivity() {
 
     private fun listenForMessages() {
         if (chatId == null) return
+        val currentUserEmail = auth.currentUser?.email ?: ""
 
         listener = db.collection("chats")
             .document(chatId!!)
@@ -109,17 +115,15 @@ class DirectMessageActivity : AppCompatActivity() {
             .orderBy("timestamp")
             .addSnapshotListener { snapshots, e ->
                 if (e != null) return@addSnapshotListener
-
                 if (snapshots != null) {
                     messages.clear()
                     for (doc in snapshots.documents) {
                         val sender = doc.getString("senderId") ?: ""
                         val text = doc.getString("text") ?: ""
-                        messages.add(Message(sender, text))
+                        val isSent = sender == currentUserEmail
+                        messages.add(Message(sender, text, isSentByCurrentUser = isSent))
                     }
-
                     adapter.notifyDataSetChanged()
-
                     if (messages.isEmpty()) {
                         emptyChatTextView.isVisible = true
                         recyclerView.isVisible = false
@@ -130,11 +134,6 @@ class DirectMessageActivity : AppCompatActivity() {
                     }
                 }
             }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        finish()
-        return true
     }
 
     override fun onDestroy() {
