@@ -1,0 +1,40 @@
+<androidx.appcompat.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/directMessageToolbar"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:background="@android:color/white"
+    android:theme="@style/ThemeOverlay.AppCompat.Light"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:elevation="4dp">
+
+    <!-- Back button -->
+    <ImageView
+        android:id="@+id/backButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@android:drawable/ic_media_previous"
+        android:contentDescription="Back"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_gravity="center_vertical"
+        app:tint="@android:color/black"
+        android:layout_marginTop="35dp"/>
+
+    <!-- User name -->
+    <TextView
+        android:id="@+id/toolbarUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="User Name"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginStart="12dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="35dp"/>
+
+</androidx.appcompat.widget.Toolbar>
+

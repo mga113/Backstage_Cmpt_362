@@ -1,6 +1,11 @@
 package com.group_12.backstage.Chat
 
+import com.google.firebase.Timestamp
+
 data class Message(
-    val sender: String,
-    val message: String
+    val sender: String = "",
+    val message: String = "",
+    val timestamp: Timestamp = Timestamp.now(),
+    val isSentByCurrentUser: Boolean = false,
+    var previewMessage: String = ""
 )

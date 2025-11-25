@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.*
 import com.group_12.backstage.R
 import com.group_12.backstage.UserAccountData.User
-import com.group_12.backstage.UserAccountData.UserAdapter
 
 class ChatFragment : Fragment() {
 
@@ -26,6 +24,7 @@ class ChatFragment : Fragment() {
     private var userList = mutableListOf<User>()
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private val listeners = mutableListOf<ListenerRegistration>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,10 +42,8 @@ class ChatFragment : Fragment() {
         return view
     }
 
-
     private fun setupRecyclerView() {
         adapter = UserAdapter(userList) { user ->
-            // Open DirectMessageActivity with the selected user
             val intent = Intent(requireContext(), DirectMessageActivity::class.java)
             intent.putExtra("targetUserId", user.uid)
             intent.putExtra("targetUserName", user.name)
@@ -69,17 +66,14 @@ class ChatFragment : Fragment() {
 
                 userList = newList
                 adapter.updateList(userList)
+
             }
     }
 
-
-
     override fun onResume() {
         super.onResume()
-        fetchUsers()  // Reload user list every time you come back to this tab
+        fetchUsers() // refresh when coming back
     }
-
-
 
     private fun setupSearch() {
         searchEditText.addTextChangedListener(object : TextWatcher {
@@ -92,12 +86,16 @@ class ChatFragment : Fragment() {
     }
 
     private fun filter(text: String) {
-        val filteredList = mutableListOf<User>()
-        for (user in userList) {
-            if (user.name.contains(text, true) || user.username.contains(text, true)) {
-                filteredList.add(user)
-            }
+        val filteredList = userList.filter {
+            it.name.contains(text, true) || it.username.contains(text, true)
         }
         adapter.updateList(filteredList)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Remove all Firestore listeners
+        listeners.forEach { it.remove() }
+        listeners.clear()
     }
 }
