@@ -75,7 +75,7 @@ class DirectMessageActivity : AppCompatActivity() {
             val text = messageEditText.text.toString()
             if (text.isNotBlank()) {
                 val currentUser = auth.currentUser
-                val senderName = currentUser?.email ?: "Anonymous"
+                val senderName = currentUser?.displayName ?: "Anonymous"
                 sendMessage(senderName, text)
                 messageEditText.text.clear()
             }
