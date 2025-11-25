@@ -23,6 +23,7 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.R
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -263,25 +264,25 @@ class ExploreFragment : Fragment() {
         }
 
         val uid = user.uid
-        val dbRef = FirebaseDatabase.getInstance()
-            .getReference("users")
-            .child(uid)
-            .child("events")
-            .child(event.id)     // event.id must be unique from Ticketmaster
 
-        // Build the object you want to store
+        val firestore = FirebaseFirestore.getInstance()
+
         val eventData = mapOf(
             "id" to event.id,
-            "name" to event.name,
+            "title" to event.name,            // MyInterests expects "title"
             "date" to event.date,
-            "venue" to event.venue,
-            "image" to event.imageUrl,
+            "location" to event.venue,         // MyInterests expects "location"
+            "imageUrl" to event.imageUrl,      // MyInterests expects "imageUrl"
             "genre" to event.genre,
             "status" to status,
-            //            "ticketUrl" to event.ticketUrl
+            "ticketUrl" to ""                  // optional for now
         )
 
-        dbRef.setValue(eventData)
+        firestore.collection("users")
+            .document(uid)
+            .collection("my_events")
+            .document(event.id)
+            .set(eventData)
             .addOnSuccessListener {
                 Toast.makeText(requireContext(), "Marked as $status", Toast.LENGTH_SHORT).show()
             }
@@ -290,6 +291,7 @@ class ExploreFragment : Fragment() {
                 Log.e("Firebase", "Error writing event", e)
             }
     }
+
 
 }
 
