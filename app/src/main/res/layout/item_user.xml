@@ -40,16 +40,6 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-
-        <TextView
-            android:id="@+id/userPreviewTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Latest message preview goes here"
-            android:textColor="#CFD8DC"
-            android:textSize="13sp"
-            android:ellipsize="end"
-            android:maxLines="1"/>
     </LinearLayout>
 
 
