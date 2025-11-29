@@ -162,19 +162,17 @@ class EventDetailsFragment : Fragment() {
         // Attach touch listener to root layout and image
         val touchListener = View.OnTouchListener { v, event ->
             gestureDetector.onTouchEvent(event)
-            // Don't consume the event so clicks still work, unless it's a swipe
-            false 
+            false
         }
 
         rootLayout.setOnTouchListener(touchListener)
         eventImage.setOnTouchListener(touchListener)
         
-        // For ScrollView, we need to be careful not to break scrolling
         scrollView.setOnTouchListener { v, event ->
              if (v.scrollY == 0) {
                  gestureDetector.onTouchEvent(event)
              }
-             false // Let ScrollView handle the scrolling
+             false
         }
     }
 }

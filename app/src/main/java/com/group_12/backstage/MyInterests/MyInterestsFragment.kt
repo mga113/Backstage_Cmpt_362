@@ -74,6 +74,10 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_my_interests, container, false)
 
+        if (savedInstanceState != null) {
+            isMapView = savedInstanceState.getBoolean("isMapView", false)
+        }
+
         recyclerView = view.findViewById(R.id.recyclerViewInterests)
         searchView = view.findViewById(R.id.searchBar)
         emptyTextView = view.findViewById(R.id.emptyTextView)
@@ -107,7 +111,16 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
         setupMapToggle()
         setupSwipeRefresh()
 
+        // Restore the view mode (List vs Map)
+        updateViewMode()
+
         return view
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("isMapView", isMapView)
+        mapView.onSaveInstanceState(outState)
     }
 
     private fun setupSwipeRefresh() {
@@ -183,19 +196,24 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
     private fun setupMapToggle() {
         btnMapToggle.setOnClickListener {
             isMapView = !isMapView
-            if (isMapView) {
-                // Hide SwipeRefreshLayout wrapper instead of just RecyclerView
-                swipeRefreshLayout.visibility = View.GONE
-                mapView.visibility = View.VISIBLE
-                emptyTextView.visibility = View.GONE
-                btnMapToggle.setImageResource(android.R.drawable.ic_menu_view) 
-                updateMapMarkers()
-            } else {
-                swipeRefreshLayout.visibility = View.VISIBLE
-                mapView.visibility = View.GONE
-                btnMapToggle.setImageResource(android.R.drawable.ic_dialog_map) 
-                emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
-            }
+            updateViewMode()
+        }
+    }
+
+    private fun updateViewMode() {
+        if (isMapView) {
+            // Map View
+            swipeRefreshLayout.visibility = View.GONE
+            mapView.visibility = View.VISIBLE
+            emptyTextView.visibility = View.GONE
+            btnMapToggle.setImageResource(android.R.drawable.ic_menu_view) 
+            updateMapMarkers()
+        } else {
+            // List View
+            swipeRefreshLayout.visibility = View.VISIBLE
+            mapView.visibility = View.GONE
+            btnMapToggle.setImageResource(android.R.drawable.ic_dialog_map) 
+            emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
         }
     }
 
@@ -448,6 +466,7 @@ class MyInterestsFragment : Fragment(), OnMapReadyCallback {
         filteredList.addAll(finalFiltered)
         adapter.notifyDataSetChanged()
         
+        // Ensure the correct view (empty text) shows up only if we are NOT in map view
         if (!isMapView) {
             emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
         }

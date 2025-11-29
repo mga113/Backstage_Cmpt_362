@@ -67,4 +67,16 @@
         <item name="android:windowBackground">@color/deep_sea_blue</item>
         <item name="android:statusBarColor">@color/deep_sea_blue</item>
     </style>
+
+    <!-- Custom DatePicker Theme -->
+    <style name="Theme.Backstage.DatePicker" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="materialCalendarStyle">@style/Widget.MaterialComponents.MaterialCalendar</item>
+        <item name="materialCalendarHeaderLayout">@style/Widget.MaterialComponents.MaterialCalendar.HeaderLayout</item>
+        
+        <!-- Colors -->
+        <item name="colorPrimary">@color/tropical_teal</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSurface">@color/deep_sea_blue</item>
+        <item name="colorOnSurface">@android:color/white</item>
+    </style>
 </resources>
