@@ -19,6 +19,8 @@ data class Event(
     val venue: String,      // venue name
     val imageUrl: String,
     val genre: String,       // e.g. "Rock", "Pop"
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0
 //    val ticketUrl: String
 )
 

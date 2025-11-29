@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,6 +12,14 @@ android {
     namespace = "com.group_12.backstage"
     compileSdk = 36
 
+    // Load local.properties
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
+    }
+    val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
         applicationId = "com.group_12.backstage"
@@ -19,6 +29,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Inject the API key into the Manifest
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -67,6 +80,7 @@ dependencies {
     // Recycler View in MyInterests
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     //Firebase
 //    implementation(platform(libs.firebase.bom))
@@ -84,4 +98,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Google Maps
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 }

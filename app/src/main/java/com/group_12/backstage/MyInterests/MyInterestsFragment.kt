@@ -1,6 +1,12 @@
 package com.group_12.backstage.MyInterests
 
+import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
+import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,18 +19,35 @@ import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
-class MyInterestsFragment : Fragment() {
+class MyInterestsFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MyInterestsAdapter
@@ -32,12 +55,18 @@ class MyInterestsFragment : Fragment() {
     private lateinit var searchView: SearchView
     private lateinit var chipGroup: ChipGroup
     private lateinit var progressBar: ProgressBar
+    private lateinit var mapView: MapView
+    private lateinit var btnMapToggle: FloatingActionButton
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
     private val eventList = mutableListOf<Event>()        // all events
     private val filteredList = mutableListOf<Event>()     // filtered events
+
+    private var googleMap: GoogleMap? = null
+    private var isMapView = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,12 +79,16 @@ class MyInterestsFragment : Fragment() {
         emptyTextView = view.findViewById(R.id.emptyTextView)
         chipGroup = view.findViewById(R.id.filterChipGroup)
         progressBar = view.findViewById(R.id.progressBar)
+        mapView = view.findViewById(R.id.mapView)
+        btnMapToggle = view.findViewById(R.id.btnMapToggle)
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
+
+        // Initialize MapView
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync(this)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         
-        // Adapter with 2 callbacks: 
-        // 1. Item Click (Navigation)
-        // 2. Status Change (Firestore Update)
         adapter = MyInterestsAdapter(
             filteredList,
             onItemClick = { event, imageView ->
@@ -71,15 +104,194 @@ class MyInterestsFragment : Fragment() {
         setupFilterChips()
         setupSwipeToDelete()
         listenForUserEvents()
+        setupMapToggle()
+        setupSwipeRefresh()
 
         return view
     }
 
+    private fun setupSwipeRefresh() {
+        swipeRefreshLayout.setOnRefreshListener {
+            // Re-apply filter to "refresh" the view
+            val query = searchView.query.toString().trim().lowercase()
+            filterList(query)
+            
+            // Optionally fetch location again
+            fetchUserLocationAndMoveCamera()
+
+            // Stop the refreshing animation
+            swipeRefreshLayout.isRefreshing = false
+        }
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+        
+        // Enable Zoom Controls & Compass
+        map.uiSettings.isZoomControlsEnabled = true
+        map.uiSettings.isCompassEnabled = true
+        map.uiSettings.isMapToolbarEnabled = false 
+
+        // Add padding to move UI controls
+        val density = resources.displayMetrics.density
+        val paddingBottom = (180 * density).toInt()
+        map.setPadding(0, 0, 0, paddingBottom)
+
+        // Handle clicking on the "Info Window"
+        map.setOnInfoWindowClickListener { marker ->
+            val event = marker.tag as? Event
+            if (event != null) {
+                navigateToEventDetails(event, null)
+            }
+        }
+
+        updateMapMarkers()
+        fetchUserLocationAndMoveCamera()
+    }
+
+    private fun fetchUserLocationAndMoveCamera() {
+        val currentUser = auth.currentUser ?: return
+        db.collection("users").document(currentUser.uid).get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    val city = document.getString("myLocation") ?: "Vancouver, BC"
+                    moveCameraToCity(city)
+                }
+            }
+    }
+
+    private fun moveCameraToCity(cityName: String) {
+        val map = googleMap ?: return
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocationName(cityName, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    val location = addresses[0]
+                    val latLng = LatLng(location.latitude, location.longitude)
+                    withContext(Dispatchers.Main) {
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12f))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MyInterestsFragment", "Geocoding error", e)
+            }
+        }
+    }
+
+    private fun setupMapToggle() {
+        btnMapToggle.setOnClickListener {
+            isMapView = !isMapView
+            if (isMapView) {
+                // Hide SwipeRefreshLayout wrapper instead of just RecyclerView
+                swipeRefreshLayout.visibility = View.GONE
+                mapView.visibility = View.VISIBLE
+                emptyTextView.visibility = View.GONE
+                btnMapToggle.setImageResource(android.R.drawable.ic_menu_view) 
+                updateMapMarkers()
+            } else {
+                swipeRefreshLayout.visibility = View.VISIBLE
+                mapView.visibility = View.GONE
+                btnMapToggle.setImageResource(android.R.drawable.ic_dialog_map) 
+                emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
+    private fun updateMapMarkers() {
+        val map = googleMap ?: return
+        map.clear()
+
+        if (filteredList.isEmpty()) return
+
+        for (event in filteredList) {
+            if (event.latitude != 0.0 || event.longitude != 0.0) {
+                addMarkerForEvent(map, event, LatLng(event.latitude, event.longitude))
+            } else {
+                geocodeAndAddMarker(map, event)
+            }
+        }
+    }
+
+    private fun geocodeAndAddMarker(map: GoogleMap, event: Event) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocationName(event.location, 1)
+                
+                if (!addresses.isNullOrEmpty()) {
+                    val location = addresses[0]
+                    val latLng = LatLng(location.latitude, location.longitude)
+                    withContext(Dispatchers.Main) {
+                        addMarkerForEvent(map, event, latLng)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MyInterests", "Geocoding fallback error", e)
+            }
+        }
+    }
+
+    private fun addMarkerForEvent(map: GoogleMap, event: Event, position: LatLng) {
+        try {
+            Glide.with(requireContext())
+                .asBitmap()
+                .load(event.imageUrl)
+                .circleCrop()
+                .override(100, 100)
+                .into(object : CustomTarget<Bitmap>() {
+                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                        try {
+                            val marker = map.addMarker(
+                                MarkerOptions()
+                                    .position(position)
+                                    .title(event.title)
+                                    .snippet(event.location)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(getCircularBitmapWithBorder(resource)))
+                            )
+                            marker?.tag = event 
+                        } catch (e: Exception) {
+                            Log.e("MapMarker", "Error adding marker", e)
+                        }
+                    }
+                    override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {}
+                })
+        } catch (e: Exception) {
+             val marker = map.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .title(event.title)
+                    .snippet(event.location)
+            )
+            marker?.tag = event
+        }
+    }
+
+    private fun getCircularBitmapWithBorder(bitmap: Bitmap, borderWidth: Int = 4): Bitmap {
+        val width = bitmap.width + borderWidth * 2
+        val height = bitmap.height + borderWidth * 2
+
+        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+
+        val paint = Paint()
+        paint.isAntiAlias = true
+
+        val rect = Rect(0, 0, width, height)
+        val rectF = RectF(rect)
+
+        paint.color = Color.WHITE
+        canvas.drawOval(rectF, paint)
+        canvas.drawBitmap(bitmap, borderWidth.toFloat(), borderWidth.toFloat(), null)
+
+        return output
+    }
+
+
     private fun updateEventStatus(event: Event, newStatus: String) {
         val currentUser = auth.currentUser ?: return
-        
-        // Optimistic update isn't strictly necessary because the SnapshotListener 
-        // will fire almost instantly, but we can verify the doc exists first.
         
         db.collection("users")
             .document(currentUser.uid)
@@ -91,10 +303,7 @@ class MyInterestsFragment : Fragment() {
             }
     }
 
-    private fun navigateToEventDetails(event: Event, imageView: ImageView) {
-        val transitionName = "event_image_${event.id}"
-        val extras = FragmentNavigatorExtras(imageView to transitionName)
-
+    private fun navigateToEventDetails(event: Event, imageView: ImageView?) {
         val bundle = bundleOf(
             "eventId" to event.id,
             "title" to event.title,
@@ -104,12 +313,21 @@ class MyInterestsFragment : Fragment() {
             "ticketUrl" to event.ticketUrl
         )
 
-        findNavController().navigate(
-            R.id.action_myInterests_to_eventDetails,
-            bundle,
-            null,
-            extras
-        )
+        if (imageView != null) {
+            val transitionName = "event_image_${event.id}"
+            val extras = FragmentNavigatorExtras(imageView to transitionName)
+            findNavController().navigate(
+                R.id.action_myInterests_to_eventDetails,
+                bundle,
+                null,
+                extras
+            )
+        } else {
+            findNavController().navigate(
+                R.id.action_myInterests_to_eventDetails,
+                bundle
+            )
+        }
     }
 
     private fun setupFilterChips() {
@@ -167,14 +385,15 @@ class MyInterestsFragment : Fragment() {
         eventList.remove(event)
         adapter.notifyItemRemoved(position)
         
-        if (filteredList.isEmpty()) emptyTextView.visibility = View.VISIBLE
+        if (filteredList.isEmpty() && !isMapView) emptyTextView.visibility = View.VISIBLE
 
         Snackbar.make(recyclerView, "${event.title} removed", Snackbar.LENGTH_LONG)
             .setAction("UNDO") {
                 filteredList.add(position, event)
                 eventList.add(event)
                 adapter.notifyItemInserted(position)
-                emptyTextView.visibility = View.GONE
+                if (!isMapView) emptyTextView.visibility = View.GONE
+                updateMapMarkers() 
             }
             .addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, eventId: Int) {
@@ -184,6 +403,8 @@ class MyInterestsFragment : Fragment() {
                 }
             })
             .show()
+            
+        updateMapMarkers() 
     }
 
     private fun permanentlyDeleteEvent(event: Event) {
@@ -226,7 +447,12 @@ class MyInterestsFragment : Fragment() {
 
         filteredList.addAll(finalFiltered)
         adapter.notifyDataSetChanged()
-        emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+        
+        if (!isMapView) {
+            emptyTextView.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+        }
+        
+        updateMapMarkers()
     }
 
     private fun listenForUserEvents() {
@@ -273,6 +499,30 @@ class MyInterestsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        mapView.onResume()
         searchView.clearFocus()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
+    }
+
+    // Helper method for MainActivity to call on tab reselection
+    fun scrollToTop() {
+        if (isMapView) {
+            btnMapToggle.performClick()
+        }
+        recyclerView.smoothScrollToPosition(0)
     }
 }

@@ -69,10 +69,16 @@ class EventDetailsFragment : Fragment() {
         val btnBuyTickets: Button = view.findViewById(R.id.btnBuyTickets)
         val scrollView: ScrollView = view.findViewById(R.id.detailsScrollView)
         val rootLayout: View = view.findViewById(R.id.detailsRootLayout)
+        val btnBack: ImageView = view.findViewById(R.id.btnBack)
 
         // Set transition name for the image view to match the one from the list
         if (eventId != null) {
             eventImage.transitionName = "event_image_$eventId"
+        }
+
+        // Back Button Logic
+        btnBack.setOnClickListener {
+            findNavController().navigateUp()
         }
 
         // Populate Data

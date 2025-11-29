@@ -1,129 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:descendantFocusability="beforeDescendants"
     tools:context=".MyInterests.MyInterestsFragment">
 
-    <TextView
-        android:id="@+id/appTitle"
+    <LinearLayout
+        android:id="@+id/contentLayout"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@color/deep_sea_blue"
-        android:fontFamily="sans-serif-medium"
-        android:paddingLeft="16dp"
-        android:gravity="center_vertical"
-        android:text="My Interests"
-        android:textColor="@color/light_teal"
-        android:textSize="24sp"
-        android:textStyle="bold|italic" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp">
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            android:clickable="false"
-            android:focusable="false">
-
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/searchBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:iconifiedByDefault="false"
-                android:queryHint="Search events..."
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:clickable="true"
-                android:background="@android:color/white"
-                android:padding="8dp"
-                android:layout_margin="4dp"
-                app:queryBackground="@android:color/transparent"
-                app:iconifiedByDefault="false" />
-        </androidx.cardview.widget.CardView>
-    </FrameLayout>
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/filterChipGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp"
-        app:singleSelection="true"
-        app:selectionRequired="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipAll"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="All"
-            android:checked="true"
-            android:textColor="@color/chip_text_selector"
-            app:chipBackgroundColor="@color/chip_background_selector"/>
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipGoing"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Going"
-            android:textColor="@color/chip_text_selector"
-            app:chipBackgroundColor="@color/chip_background_selector"/>
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipInterested"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Interested"
-            android:textColor="@color/chip_text_selector"
-            app:chipBackgroundColor="@color/chip_background_selector"/>
-
-    </com.google.android.material.chip.ChipGroup>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewInterests"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingHorizontal="8dp"
-            android:paddingBottom="150dp"
-            android:scrollbars="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:descendantFocusability="beforeDescendants"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
-            android:id="@+id/emptyTextView"
+            android:id="@+id/appTitle"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/deep_sea_blue"
+            android:fontFamily="sans-serif-medium"
+            android:paddingLeft="16dp"
+            android:gravity="center_vertical"
+            android:text="My Interests"
+            android:textColor="@color/light_teal"
+            android:textSize="24sp"
+            android:textStyle="bold|italic" />
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No interests added yet."
-            android:gravity="center"
-            android:padding="16dp"
-            android:textColor="#555555"
-            android:textSize="16sp"
-            android:visibility="gone"
-            android:layout_gravity="center" />
+            android:layout_margin="16dp">
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:clickable="false"
+                android:focusable="false">
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/searchBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:iconifiedByDefault="false"
+                    android:queryHint="Search events..."
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:clickable="true"
+                    android:background="@android:color/white"
+                    android:padding="8dp"
+                    android:layout_margin="4dp"
+                    app:queryBackground="@android:color/transparent"
+                    app:iconifiedByDefault="false" />
+            </androidx.cardview.widget.CardView>
+        </FrameLayout>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/filterChipGroup"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="visible"
-            android:indeterminateTint="@color/tropical_teal" />
-    </FrameLayout>
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="8dp"
+            app:singleSelection="true"
+            app:selectionRequired="true">
 
-</LinearLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All"
+                android:checked="true"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipGoing"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Going"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipInterested"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interested"
+                android:textColor="@color/chip_text_selector"
+                app:chipBackgroundColor="@color/chip_background_selector"/>
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipeRefreshLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewInterests"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="8dp"
+                    android:paddingBottom="150dp"
+                    android:scrollbars="vertical"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+            <com.google.android.gms.maps.MapView
+                android:id="@+id/mapView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/emptyTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No interests added yet."
+                android:gravity="center"
+                android:padding="16dp"
+                android:textColor="#555555"
+                android:textSize="16sp"
+                android:visibility="gone"
+                android:layout_gravity="center" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="visible"
+                android:indeterminateTint="@color/tropical_teal" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnMapToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_dialog_map"
+        android:contentDescription="Toggle Map View"
+        app:backgroundTint="@color/tropical_teal"
+        app:tint="@android:color/white"
+        android:elevation="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="130dp"
+        android:layout_marginEnd="24dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
