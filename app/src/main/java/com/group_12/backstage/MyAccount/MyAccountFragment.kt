@@ -1,7 +1,9 @@
 package com.group_12.backstage.MyAccount
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +28,8 @@ import com.group_12.backstage.databinding.FragmentMyAccountBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 
 
 class MyAccountFragment : Fragment(), MyAccountNavigator {
@@ -56,6 +60,7 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
 
         viewLifecycleOwner.lifecycleScope.launch {
             vm.items.collectLatest { adapter.submitList(it) }
+            vm.uploadProgress.collectLatest { binding.progress.isVisible = it } //for profile image; to show the progress bar
         }
     }
 
@@ -108,6 +113,44 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         }
     }
 
+    // for profile photo
+    private val requestCameraPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) cameraLauncher.launch(vm.getTempImageUri(requireContext()))
+            else Snackbar.make(binding.root, "Camera permission is required.", Snackbar.LENGTH_SHORT).show()
+        }
+
+    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) vm.getTempImageUri(requireContext())?.let { uri -> vm.uploadProfileImage(uri) }
+    }
+
+    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { vm.uploadProfileImage(it) }
+    }
+
+    // Implement the click handler function
+    override fun onProfileImageClicked() {
+        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Change Profile Picture")
+            .setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> checkCameraPermissionAndLaunch()
+                    1 -> galleryLauncher.launch("image/*")
+                    2 -> dialog.dismiss()
+                }
+            }
+            .show()
+    }
+
+    // Add this helper function for checking camera permission
+    private fun checkCameraPermissionAndLaunch() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            cameraLauncher.launch(vm.getTempImageUri(requireContext()))
+        } else {
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     override fun onEditClicked(id: String) {
         when (id) {
@@ -192,7 +235,6 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
     }
 
     // ---- Location helpers ----
-
     private fun isLocationEnabled(): Boolean {
         val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
@@ -217,8 +259,6 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         startActivity(intent)
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

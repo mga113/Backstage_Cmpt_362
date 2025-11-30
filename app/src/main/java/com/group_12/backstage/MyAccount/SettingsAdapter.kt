@@ -3,10 +3,13 @@ package com.group_12.backstage.MyAccount
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.with
+import androidx.compose.ui.semantics.error
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.group_12.backstage.R
 import com.group_12.backstage.databinding.ItemHeaderWelcomeBinding
 import com.group_12.backstage.databinding.ItemRowChevronBinding
@@ -56,15 +59,27 @@ class SettingsAdapter(
     class HeaderVH(private val b: ItemHeaderWelcomeBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(item: SettingsItem.Header, nav: MyAccountNavigator) {
             b.title.text = "My Account"
-            // If signed in, show just the brand/name. If not, show "Welcome to..."
+            // If signed in, show just the "Hi, username". If not, show "Welcome to..."
             if (item.showSignIn) {
                 b.subtitle.text = "Welcome to ${item.welcomeBrand}"
                 b.signInButton.visibility = View.VISIBLE
+                b.profileImage.visibility = View.GONE      // HIDE image
                 b.signInButton.setOnClickListener { nav.onSignInClicked() }
             } else {
-                b.subtitle.text = "Hi, ${item.welcomeBrand}"
-                b.signInButton.visibility = View.GONE
-                b.signInButton.setOnClickListener(null)
+                b.subtitle.text = "Hi, ${item.welcomeBrand} !"
+                b.signInButton.visibility = View.GONE      // HIDE button
+                b.profileImage.visibility = View.VISIBLE   // SHOW image
+                // Load image using Glide
+                Glide.with(b.root.context)
+                    .load(item.profileImageUrl)
+                    .placeholder(R.drawable.ic_account_circle)
+                    .error(R.drawable.ic_account_circle)
+                    .into(b.profileImage)
+
+                b.profileImage.setOnClickListener {
+                    // added this in Navigator and implemented in the Fragment
+                    nav.onProfileImageClicked()
+                }
             }
         }
     }
@@ -72,8 +87,6 @@ class SettingsAdapter(
     class SectionVH(private val b: ItemRowSectionBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(item: SettingsItem.SectionTitle) {
             b.sectionTitle.text = item.title
-            b.badge.text = item.badge ?: ""
-            b.badge.visibility = if (item.badge == null) View.GONE else View.VISIBLE
         }
     }
 

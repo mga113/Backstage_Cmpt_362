@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.group_12.backstage.R
 
@@ -44,12 +45,32 @@ class RegisterActivity : AppCompatActivity() {
             auth.createUserWithEmailAndPassword(emailText, passText)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        val uid = auth.currentUser!!.uid
+                        // 1. Get the new user
+                        val firebaseUser = auth.currentUser
+                        val uid = firebaseUser!!.uid
 
-                        // Show toast and go to LoginActivity immediately
-                        Toast.makeText(this, "Registered!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, LoginActivity::class.java))
-                        finish()
+                        // 2. Create the profile update request with the name
+                        val profileUpdates = userProfileChangeRequest {
+                            displayName = nameText
+                        }
+
+
+                        // Update the profile AND WAIT for it to finish
+                        firebaseUser.updateProfile(profileUpdates).addOnCompleteListener { profileTask ->
+                            if (profileTask.isSuccessful) {
+                                // PROFILE UPDATE IS NOW COMPLETE!
+                                // It is now safe to navigate.
+                                Toast.makeText(this, "Registered!", Toast.LENGTH_SHORT).show()
+                                startActivity(Intent(this, LoginActivity::class.java))
+                                finish()
+                            } else {
+                                // Profile update failed, but user was still created.
+                                // Inform the user and let them proceed to login.
+                                Toast.makeText(this, "Registration successful, but failed to set display name.", Toast.LENGTH_LONG).show()
+                                startActivity(Intent(this, LoginActivity::class.java))
+                                finish()
+                            }
+                        }
 
                         // Save user data in Firestore in the background
                         val userMap = hashMapOf(

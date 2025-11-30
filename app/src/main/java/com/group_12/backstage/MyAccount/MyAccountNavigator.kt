@@ -6,4 +6,5 @@ interface MyAccountNavigator {
     fun onChevronClicked(id: String)
     fun onSwitchChanged(id: String, enabled: Boolean)
     fun onEditClicked(id: String)
+    fun onProfileImageClicked()
 }

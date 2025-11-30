@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/deep_sea_blue"
+    android:gravity="center_horizontal"
     android:paddingBottom="16dp">
 
     <TextView
@@ -20,6 +22,18 @@
         android:textSize="24sp"
         android:textStyle="bold|italic" />
 
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/profileImage"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
+        app:strokeColor="@color/light_teal"
+        app:strokeWidth="2dp"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_marginTop="24dp"
+        android:padding="4dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_account_circle" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,7 +44,7 @@
 
         <TextView
             android:id="@+id/subtitle"
-            android:text="Welcome to ticketmaster"
+            android:text="Welcome to BackStage"
             android:textSize="16sp"
             android:textColor="@android:color/white"
             android:layout_width="wrap_content"
