@@ -26,6 +26,9 @@ import com.group_12.backstage.databinding.FragmentMyAccountBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import android.net.Uri
+import android.provider.OpenableColumns
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -62,7 +65,17 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
 
         viewLifecycleOwner.lifecycleScope.launch {
             vm.items.collectLatest { adapter.submitList(it) }
-            vm.uploadProgress.collectLatest { binding.progress.isVisible = it } //for profile image; to show the progress bar
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            vm.uploadProgress.collectLatest { binding.progress.isVisible = it }
+        }
+        
+        // Listen for feedback messages from ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            vm.userMessages.collectLatest { message ->
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -117,37 +130,72 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
         }
     }
 
-    // for profile photo
+    // --- PROFILE IMAGE HANDLING ---
+
+    // 1. Permission Launcher
     private val requestCameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) {
-            val tempUri = getTempImageUri(requireContext())
-            vm.tempImageUri = tempUri
-            cameraLauncher.launch(tempUri)
+            launchCamera()
         } else {
-            Snackbar.make(binding.root, "Camera permission is required.", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, "Camera permission is required to take a photo.", Snackbar.LENGTH_LONG).show()
         }
     }
 
+    // 2. Camera Launcher
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
+            // The image was saved to vm.tempImageUri
             vm.tempImageUri?.let { uri ->
-                vm.uploadProfileImage(uri)
+                if (checkFileExists(uri)) {
+                    vm.uploadProfileImage(uri)
+                } else {
+                    Toast.makeText(requireContext(), "Error: Photo file is empty or missing.", Toast.LENGTH_LONG).show()
+                }
             }
+        } else {
+             Toast.makeText(requireContext(), "Photo capture cancelled", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun checkFileExists(uri: Uri): Boolean {
+        return try {
+            requireContext().contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (cursor.moveToFirst()) {
+                    val size = if (sizeIndex >= 0) cursor.getLong(sizeIndex) else 0
+                    Log.d("MyAccount", "File size: $size bytes")
+                    return size > 0
+                }
+            }
+            // Fallback: if query fails but URI exists, try opening stream
+             requireContext().contentResolver.openInputStream(uri)?.use { 
+                 return it.available() >= 0 
+             } ?: false
+        } catch (e: Exception) {
+            Log.e("MyAccount", "Error checking file", e)
+            false
+        }
+    }
+
+    // 3. Gallery Launcher
+    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            vm.uploadProfileImage(uri)
+        } else {
+            Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Helper to create a temporary file for the camera
     private fun getTempImageUri(context: Context): Uri {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val tempImageFile = File.createTempFile("JPEG_${timeStamp}_", ".jpg", context.cacheDir)
-
-        return FileProvider.getUriForFile(context, "${context.packageName}.provider", tempImageFile)
+        
+        // Authority must match AndroidManifest.xml
+        return FileProvider.getUriForFile(context, "com.group_12.backstage.provider", tempImageFile)
     }
 
-    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { vm.uploadProfileImage(it) }
-    }
-
-    // Implement the click handler function
+    // Called when user clicks the profile image placeholder
     override fun onProfileImageClicked() {
         val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
         AlertDialog.Builder(requireContext())
@@ -164,11 +212,20 @@ class MyAccountFragment : Fragment(), MyAccountNavigator {
 
     private fun checkCameraPermissionAndLaunch() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            val tempUri = getTempImageUri(requireContext())
-            vm.tempImageUri = tempUri
-            cameraLauncher.launch(tempUri)
+            launchCamera()
         } else {
             requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCamera() {
+        try {
+            val tempUri = getTempImageUri(requireContext())
+            vm.tempImageUri = tempUri // Save to ViewModel to survive configuration changes
+            cameraLauncher.launch(tempUri)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error launching camera: ${e.message}", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
         }
     }
 

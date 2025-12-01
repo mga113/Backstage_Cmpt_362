@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/deep_sea_blue"
-    android:gravity="center_horizontal"
     android:paddingBottom="16dp">
 
+    <!-- Title Bar -->
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
@@ -22,41 +22,53 @@
         android:textSize="24sp"
         android:textStyle="bold|italic" />
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/profileImage"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
-        app:strokeColor="@color/light_teal"
-        app:strokeWidth="2dp"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_marginTop="24dp"
-        android:padding="4dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_account_circle" />
-
+    <!-- Profile Section: Horizontal Layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="16dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="24dp">
 
-        <TextView
-            android:id="@+id/subtitle"
-            android:text="Welcome to BackStage"
-            android:textSize="16sp"
-            android:textColor="@android:color/white"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <!-- Profile Image (Left) -->
+        <!-- Removed strokeColor and padding to remove neon border -->
+        <!-- Changed shapeAppearanceOverlay to a simpler rounded corner style if needed, or default -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImage"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_account_circle" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/signInButton"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_marginTop="16dp"
-            android:text="Sign In"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        <!-- Text Section (Right) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="24dp">
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:text="Welcome to BackStage"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/signInButton"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginTop="12dp"
+                android:text="Sign In"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
     </LinearLayout>
 
 </LinearLayout>

@@ -1,14 +1,22 @@
 package com.group_12.backstage.MyAccount
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageMetadata
 import com.group_12.backstage.R
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -16,6 +24,10 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
     private val db = FirebaseFirestore.getInstance()
     private val _items = MutableStateFlow<List<SettingsItem>>(emptyList())
     val items = _items.asStateFlow()
+
+    // Feedback messages for the Fragment
+    private val _userMessages = MutableSharedFlow<String>()
+    val userMessages = _userMessages.asSharedFlow()
 
     init {
         refreshAuthStatus()
@@ -38,7 +50,12 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
 
     private fun listenToUserSettings(uid: String) {
         db.collection("users").document(uid)
-            .addSnapshotListener { snapshot, _ ->
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("MyAccountViewModel", "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
                 val firebaseUser = auth.currentUser
                 val displayName = firebaseUser?.displayName?.takeIf { it.isNotBlank() }
                 val greetingName = displayName ?: firebaseUser?.email ?: "User"
@@ -75,7 +92,7 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
                         )
                     )
 
-                    // Location toggle button (city, state and country are the fields that we will extract from user's current location and save in db)
+                    // Location toggle button
                     add(
                         SettingsItem.SectionTitle(
                             title = "Location Settings",
@@ -143,24 +160,62 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
 
     fun uploadProfileImage(uri: Uri) {
         _uploadProgress.value = true
-        val user = auth.currentUser ?: run { _uploadProgress.value = false; return }
-        // Firebase Storage library is separate from Auth and Firestore
-        val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference.child("profile_images/${user.uid}.jpg")
+        val user = auth.currentUser ?: run { 
+            _uploadProgress.value = false
+            return 
+        }
+        
+        val storage = FirebaseStorage.getInstance()
+        // Create a reference to "profile_images/<UID>.jpg"
+        val storageRef = storage.reference
+            .child("profile_images")
+            .child("${user.uid}.jpg")
 
-        storageRef.putFile(uri)
-            .continueWithTask { task ->
-                if (!task.isSuccessful) {
-                    task.exception?.let { throw it }
-                }
-                storageRef.downloadUrl
+        Log.d("MyAccountViewModel", "Starting upload to ${storageRef.path} from URI: $uri")
+
+        val metadata = StorageMetadata.Builder()
+            .setContentType("image/jpeg")
+            .build()
+
+        // 1. Upload the file
+        storageRef.putFile(uri, metadata)
+            .addOnSuccessListener { taskSnapshot ->
+                Log.d("MyAccountViewModel", "Upload SUCCESS. Bytes: ${taskSnapshot.bytesTransferred}")
+                
+                // 2. Get the Download URL
+                // We use taskSnapshot.storage to ensure we reference the exact object that was uploaded
+                taskSnapshot.storage.downloadUrl
+                    .addOnSuccessListener { downloadUri ->
+                        Log.d("MyAccountViewModel", "Download URL: $downloadUri")
+                        updateUserProfileUrl(downloadUri)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("MyAccountViewModel", "Failed to get download URL", e)
+                        _uploadProgress.value = false
+                        
+                        val msg = e.message ?: ""
+                        if (msg.contains("Object does not exist", ignoreCase = true) || msg.contains("404")) {
+                             viewModelScope.launch { 
+                                 // This is the #1 cause: Security Rules don't allow reading
+                                 _userMessages.emit("Upload Success, but Read Failed. Please ALLOW READ access in Firebase Storage Rules.") 
+                             }
+                        } else {
+                            viewModelScope.launch { 
+                                _userMessages.emit("Failed to get image URL: $msg") 
+                            }
+                        }
+                    }
             }
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val downloadUri = task.result
-                    updateUserProfileUrl(downloadUri)
+            .addOnFailureListener { e ->
+                // This handles actual upload failures
+                Log.e("MyAccountViewModel", "Upload FAILED", e)
+                _uploadProgress.value = false
+                
+                if (e is java.io.FileNotFoundException) {
+                     viewModelScope.launch { _userMessages.emit("Error: Local file not found. Please try again.") }
                 } else {
-                    _uploadProgress.value = false
-                    // Handle failure
+                     // Show the raw error message to help debug
+                     viewModelScope.launch { _userMessages.emit("Upload Failed: ${e.message}") }
                 }
             }
     }
@@ -168,21 +223,26 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
     private fun updateUserProfileUrl(uri: Uri) {
         val user = auth.currentUser!!
 
-        // First, update the Firestore document.
-        // The listener on this document will automatically update the UI.
+        val timestampedUri = uri.buildUpon()
+            .appendQueryParameter("t", System.currentTimeMillis().toString())
+            .build()
+
         db.collection("users").document(user.uid)
-            .update("profileImageUrl", uri.toString())
+            .set(mapOf("profileImageUrl" to timestampedUri.toString()), SetOptions.merge())
             .addOnSuccessListener {
-                // Once Firestore is updated, also update the Firebase Auth profile
-                // This is for consistency.
-                val profileUpdates = userProfileChangeRequest { photoUri = uri }
+                Log.d("MyAccountViewModel", "Firestore profileImageUrl updated")
+                
+                val profileUpdates = userProfileChangeRequest { photoUri = timestampedUri }
                 user.updateProfile(profileUpdates).addOnCompleteListener {
-                    _uploadProgress.value = false // Hide progress bar
+                    _uploadProgress.value = false
+                    Log.d("MyAccountViewModel", "Auth profile updated")
+                    viewModelScope.launch { _userMessages.emit("Profile Photo Updated!") }
                 }
             }
-            .addOnFailureListener {
+            .addOnFailureListener { e ->
+                Log.e("MyAccountViewModel", "Firestore update failed", e)
                 _uploadProgress.value = false
-                // Handle Firestore update failure
+                viewModelScope.launch { _userMessages.emit("Failed to save profile URL: ${e.message}") }
             }
     }
 
@@ -202,7 +262,7 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
             else -> null
         } ?: return
 
-        db.collection("users").document(uid).update(field, enabled)
+        db.collection("users").document(uid).set(mapOf(field to enabled), SetOptions.merge())
     }
 
     // Used by the edit dialog to get the current text
@@ -228,6 +288,6 @@ class MyAccountViewModel(private val savedStateHandle: SavedStateHandle) : ViewM
             else -> null
         } ?: return
 
-        db.collection("users").document(uid).update(field, newValue)
+        db.collection("users").document(uid).set(mapOf(field to newValue), SetOptions.merge())
     }
 }

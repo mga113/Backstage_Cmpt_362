@@ -72,6 +72,7 @@ class SettingsAdapter(
                 // Load image using Glide
                 Glide.with(b.root.context)
                     .load(item.profileImageUrl)
+                    .circleCrop() // Ensure circular crop
                     .placeholder(R.drawable.ic_account_circle)
                     .error(R.drawable.ic_account_circle)
                     .into(b.profileImage)
