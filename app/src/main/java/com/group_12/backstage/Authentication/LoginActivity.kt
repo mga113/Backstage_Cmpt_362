@@ -12,6 +12,7 @@ import android.widget.TextView
 import com.group_12.backstage.MainActivity
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.group_12.backstage.MyAccount.LocationHelper
 import com.group_12.backstage.notifications.FcmTokenManager
@@ -29,6 +30,7 @@ class LoginActivity : AppCompatActivity() {
         val email = findViewById<EditText>(R.id.emailLoginEditText)
         val password = findViewById<EditText>(R.id.passwordLoginEditText)
         val loginBtn = findViewById<Button>(R.id.loginButton)
+        val forgotPassword = findViewById<TextView>(R.id.tvForgotPassword)
 
         loginBtn.setOnClickListener {
             val emailText = email.text.toString().trim()
@@ -56,11 +58,40 @@ class LoginActivity : AppCompatActivity() {
                 }
         }
 
+        forgotPassword.setOnClickListener {
+            showForgotPasswordDialog()
+        }
+
         val tvSignUp = findViewById<TextView>(R.id.tvSignUp)
         tvSignUp.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
+    }
+
+    private fun showForgotPasswordDialog() {
+        val builder = AlertDialog.Builder(this)
+        val inflater = layoutInflater
+        val dialogLayout = inflater.inflate(R.layout.dialog_forgot_password, null)
+        val emailEditText = dialogLayout.findViewById<EditText>(R.id.emailResetEditText)
+
+        builder.setTitle("Forgot Password")
+            .setMessage("Enter your email to receive a password reset link.")
+            .setView(dialogLayout)
+            .setPositiveButton("Send") { _, _ ->
+                val email = emailEditText.text.toString().trim()
+                if (email.isNotEmpty()) {
+                    auth.sendPasswordResetEmail(email)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Password reset email sent to $email", Toast.LENGTH_LONG).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(this, "Failed to send reset email: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private val locationPermissionLauncher =
