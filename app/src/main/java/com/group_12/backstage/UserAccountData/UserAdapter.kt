@@ -17,6 +17,8 @@ class UserAdapter(
 
     class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val userName: TextView = itemView.findViewById(R.id.userNameTextView)
+        val userProfileImage: ImageView = itemView.findViewById(R.id.userProfileImage)
+        val unreadDot: View = itemView.findViewById(R.id.unreadDot) // Find the dot
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -29,6 +31,17 @@ class UserAdapter(
         val user = userList[position]
         holder.userName.text = user.name
         holder.itemView.setOnClickListener { onUserClick(user) }
+
+        if (user.profileImageUrl.isNotEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(user.profileImageUrl)
+                .into(holder.userProfileImage)
+        } else {
+            holder.userProfileImage.setImageResource(R.drawable.ic_person) // Default avatar
+        }
+
+        // Show or hide the blue dot based on the 'unread' flag
+        holder.unreadDot.visibility = if (user.unread) View.VISIBLE else View.GONE
     }
 
     override fun getItemCount() = userList.size
