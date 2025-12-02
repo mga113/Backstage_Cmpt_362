@@ -36,6 +36,15 @@ function HeroSection() {
           className='btns'
           buttonStyle='btn--outline'
           buttonSize='btn--large'
+          href="https://drive.google.com/file/d/1JduXVMaxffIgsvIrk8AXllGEHY-dA3-j/view?usp=sharing"
+        >
+          Download APK <i className='fas fa-download' />
+        </Button>
+
+        <Button
+          className='btns'
+          buttonStyle='btn--outline'
+          buttonSize='btn--large'
           href="https://youtu.be/Zx8qAwGfUdA"
         >
           ORIGINAL PITCH <i className='far fa-play-circle' />
@@ -45,19 +54,12 @@ function HeroSection() {
           className='btns'
           buttonStyle='btn--outline'
           buttonSize='btn--large'
-          href="https://youtu.be/7225EoVwszQ"
+          href="https://www.youtube.com/watch?v=c5o3nRMdoOQ"
         >
           WATCH FINAL DEMO <i className='far fa-play-circle' />
         </Button>
 
-        <Button
-          className='btns'
-          buttonStyle='btn--outline'
-          buttonSize='btn--large'
-          href="https://drive.google.com/file/d/14Ei3tO2NENfyDNboRIQ0_f-jHyf7nZ3s/view"
-        >
-          Download APK <i className='fas fa-download' />
-        </Button>
+
       </div>
     </section>
   );
