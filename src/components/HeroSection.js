@@ -10,6 +10,16 @@ function HeroSection() {
       <h1>WHERE MUSIC MEETS CONNECTION</h1>
       <p>What are you waiting for?</p>
       <div className='hero-btns'>
+
+        <Button
+          className='btns'
+          buttonStyle='btn--outline'
+          buttonSize='btn--large'
+          href="https://github.com/mga113/Backstage_Cmpt_362"
+        >
+          Git Repo <i className="fab fa-github" />
+
+        </Button>
  
         <Button
           className='btns'
