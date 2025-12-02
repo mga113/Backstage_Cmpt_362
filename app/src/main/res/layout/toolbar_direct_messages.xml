@@ -15,7 +15,7 @@
         android:id="@+id/backButton"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:src="@android:drawable/ic_media_previous"
+        android:src="@drawable/ic_arrow_back"
         android:contentDescription="Back"
         android:clickable="true"
         android:focusable="true"

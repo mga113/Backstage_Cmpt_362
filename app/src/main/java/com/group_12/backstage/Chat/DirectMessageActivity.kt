@@ -15,7 +15,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.SetOptions
 import com.group_12.backstage.R
 import com.group_12.backstage.util.NotificationHelper
 
@@ -59,17 +58,8 @@ class DirectMessageActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupChatId()
-        markChatAsRead() // Mark chat as read when opened
         setupSendButton()
         listenForMessages()
-    }
-
-    private fun markChatAsRead() {
-        val currentUserId = auth.currentUser?.uid
-        if (chatId != null && currentUserId != null) {
-            db.collection("chats").document(chatId!!)
-                .set(mapOf("isRead_${currentUserId}" to true), SetOptions.merge())
-        }
     }
 
     private fun setupRecyclerView() {
@@ -92,66 +82,39 @@ class DirectMessageActivity : AppCompatActivity() {
         sendButton.setOnClickListener {
             val text = messageEditText.text.toString()
             if (text.isNotBlank()) {
+                // *** FIX: Get the current user's UID ***
                 val currentUser = auth.currentUser ?: return@setOnClickListener
+                // *** FIX: Pass the UID to sendMessage ***
                 sendMessage(currentUser.uid, text)
                 messageEditText.text.clear()
             }
         }
     }
 
-    private fun sendMessage(senderId: String, message: String) {
-        if (chatId == null) return
-
-        val currentUser = auth.currentUser ?: return
-        val senderName = currentUser.displayName ?: "Anonymous"
-        val receiverId = targetUserId ?: return
-
-        val timestamp = System.currentTimeMillis()
-
-        val msg = hashMapOf(
-            "senderId" to senderId,
-            "senderName" to senderName,
-            "text" to message,
-            "timestamp" to timestamp
-        )
-
-        val chatDocRef = db.collection("chats").document(chatId!!)
-
-        chatDocRef.collection("messages")
-            .add(msg)
-            .addOnSuccessListener {
-                // Update timestamp and mark as unread for the receiver
-                val chatUpdates = mapOf(
-                    "lastMessageTimestamp" to timestamp,
-                    "lastMessageSenderId" to senderId,
-                    "isRead_${receiverId}" to false, // Mark as unread for the other user
-                    "isRead_${senderId}" to true      // Mark as read for the current user (sender)
-                )
-                chatDocRef.set(chatUpdates, SetOptions.merge())
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
-            }
-    }
-
     private fun listenForMessages() {
         if (chatId == null) return
         val currentUserId = auth.currentUser?.uid ?: ""
 
+        // This listener will now only be responsible for ADDING new messages
+        // We will load the initial history separately.
         listener = db.collection("chats")
             .document(chatId!!)
             .collection("messages")
             .orderBy("timestamp")
             .addSnapshotListener { snapshots, e ->
                 if (e != null) {
+                    // Handle error, maybe log it or show a Toast
                     return@addSnapshotListener
                 }
                 if (snapshots == null) {
                     return@addSnapshotListener
                 }
 
+                // --- Consolidated Logic for NEW Messages ---
                 val newMessages = mutableListOf<Message>()
                 for (docChange in snapshots.documentChanges) {
+
+                    // We only care about documents that were newly added since the last update
                     if (docChange.type == DocumentChange.Type.ADDED) {
                         val messageDoc = docChange.document
                         val senderId = messageDoc.getString("senderId") ?: ""
@@ -161,6 +124,9 @@ class DirectMessageActivity : AppCompatActivity() {
 
                         newMessages.add(Message(senderId, text, timestamp, isSentByCurrentUser))
 
+                        // --- Notification Logic ---
+                        // Only show a notification if the message is NOT from the current user
+                        // AND the chat screen is not currently visible (app is in background).
                         if (!isSentByCurrentUser && lifecycle.currentState != Lifecycle.State.RESUMED) {
                             val senderName = messageDoc.getString("senderName") ?: "Someone"
                             NotificationHelper.showNewMessageNotification(this, senderName, text)
@@ -168,16 +134,49 @@ class DirectMessageActivity : AppCompatActivity() {
                     }
                 }
 
+                // --- UI Update ---
                 if (newMessages.isNotEmpty()) {
+                    // Add the new messages to our main list
                     messages.addAll(newMessages)
+                    // Sort by timestamp to handle any out-of-order delivery
                     messages.sortBy { it.timestamp }
+
+                    // Notify the adapter of the changes
                     adapter.notifyDataSetChanged()
+
+                    // Update UI visibility and scroll to the newest message at the bottom
                     emptyChatTextView.isVisible = messages.isEmpty()
                     recyclerView.isVisible = messages.isNotEmpty()
                     recyclerView.scrollToPosition(messages.size - 1)
                 }
             }
     }
+
+
+    private fun sendMessage(senderId: String, message: String) { // *** FIX: Changed parameter to senderId ***
+        if (chatId == null) return
+
+        val currentUser = auth.currentUser
+        // We get the sender's display name here to store it with the message
+        val senderName = currentUser?.displayName ?: "Anonymous"
+
+        val msg = hashMapOf(
+            "senderId" to senderId,       // The user's unique ID
+            "senderName" to senderName,   // The user's display name for notifications
+            "text" to message,
+            "timestamp" to System.currentTimeMillis()
+        )
+
+        db.collection("chats")
+            .document(chatId!!)
+            .collection("messages")
+            .add(msg)
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
