@@ -18,7 +18,9 @@ class UserAdapter(
     class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val userName: TextView = itemView.findViewById(R.id.userNameTextView)
         val userProfileImage: ImageView = itemView.findViewById(R.id.userProfileImage)
-        val unreadDot: View = itemView.findViewById(R.id.unreadDot) // Find the dot
+        val unreadDot: View = itemView.findViewById(R.id.unreadDot)
+        // Find the new TextView
+        val lastMessagePreview: TextView = itemView.findViewById(R.id.lastMessagePreviewTextView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -31,6 +33,9 @@ class UserAdapter(
         val user = userList[position]
         holder.userName.text = user.name
         holder.itemView.setOnClickListener { onUserClick(user) }
+
+        // Set the message preview text
+        holder.lastMessagePreview.text = user.lastMessagePreview
 
         if (user.profileImageUrl.isNotEmpty()) {
             Glide.with(holder.itemView.context)

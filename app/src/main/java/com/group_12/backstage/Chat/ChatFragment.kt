@@ -81,13 +81,13 @@ class ChatFragment : Fragment() {
 
                         if (snapshot != null && snapshot.exists()) {
                             val timestamp = snapshot.getLong("lastMessageTimestamp") ?: 0L
-                            // Get read status for the current user
                             val isRead = snapshot.getBoolean("isRead_${currentUserId}") ?: true
                             val lastMessageSenderId = snapshot.getString("lastMessageSenderId") ?: ""
+                            val lastMessageText = snapshot.getString("lastMessageText") ?: "" // Get the preview text
 
                             val userToUpdate = allUsers.find { it.uid == user.uid }
                             userToUpdate?.lastMessageTimestamp = timestamp
-                            // Set unread flag if the chat is not read AND the last message isn't from the current user
+                            userToUpdate?.lastMessagePreview = lastMessageText // Set the preview text
                             userToUpdate?.unread = !isRead && lastMessageSenderId != currentUserId
                         }
 
