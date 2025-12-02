@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.group_12.backstage.MyAccount.LocationHelper
 import com.group_12.backstage.notifications.FcmTokenManager
+import android.os.Build
 
 class LoginActivity : AppCompatActivity() {
 
@@ -47,6 +48,8 @@ class LoginActivity : AppCompatActivity() {
                     val uid = auth.currentUser!!.uid
                     // One-time location refresh on fresh login
                     ensureLocationAndUpdate(uid)
+                    // Request notification permission (Android 13+)
+                    requestNotificationPermission()
                     // Initialize FCM token for push notifications
                     FcmTokenManager.initializeFcmToken()
                     Toast.makeText(this, "Logged in!", Toast.LENGTH_SHORT).show()
@@ -94,6 +97,17 @@ class LoginActivity : AppCompatActivity() {
             .show()
     }
 
+    private val notificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                Toast.makeText(this, "Notifications enabled", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Notifications disabled", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     private val locationPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
@@ -130,6 +144,16 @@ class LoginActivity : AppCompatActivity() {
                     android.Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             )
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        // Only request on Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = android.Manifest.permission.POST_NOTIFICATIONS
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(permission)
+            }
         }
     }
 
