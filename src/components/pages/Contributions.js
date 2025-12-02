@@ -32,7 +32,16 @@ export default function Contributions() {
           version: 'Final Release',
           date: 'Dec 2, 2025',
           tasks: [
-        
+            '-Dual View System - List and Map view toggle with Google Maps integration',
+            '-Event Management - Display saved events with "Interested" vs "Going" status tracking',
+            'Advanced Filtering - Search, location, date range, and status filters',
+            '-Swipe-to-Delete - Gesture-based deletion with undo functionality',
+            '-Real-time Sync - Firebase Firestore listeners for instant updates across devices',
+            '-Past Event Filtering - Automatically hides expired events',
+            '-User Search - Real-time search by name/email with prefix matching',
+            '-Friend Request System - Send, accept, decline with 4-state status tracking',
+            '-Friends List - View all friends with profile access to see what events are they going to.',
+            '-Scalable UI - "See all" pattern showing top 3 requests + full page'
           ]
         }
       ]
@@ -65,7 +74,13 @@ export default function Contributions() {
           version: 'Final Release',
           date: 'Dec 2, 2025',
           tasks: [
-            'Coming soon!',
+            '-Friends-Only Messaging - Chat restricted to accepted friends from Friends tab, fetched via Firestore friends subcollection query',
+            '-Real-time Chat - Instant bidirectional messaging with Firestore snapshot listeners on messages subcollection',
+            '-Read Receipts - Per-user read status tracking, visual blue dot indicator for unread chats',
+            '-Chat Preview - Display last message text, timestamp, and sender ID in chat list for context before opening conversation',
+            '-Search Friends - Case-insensitive real-time search filtering by friend name within existing chat list',
+            'Authentication - only allow unique usernames ',
+            '-Auto-sorted List - Chats ordered by lastMessageTimestamp (descending) to show most recent conversations first'
           ]
         }
       ]
@@ -95,7 +110,12 @@ export default function Contributions() {
           version: 'Final Release',
           date: 'Dec 2, 2025',
           tasks: [
-            'Coming soon!',
+            '-Event Discovery - Search concerts by artist, venue, or city using Ticketmaster Discovery API with 350ms debounce for optimized queries',
+            '-Advanced Filtering - Genre chips, Material Date Picker for range selection, and 3 sort options',
+            '-Location-Based Search - Automatic "Nearby" sorting using FusedLocationProvider for user coordinates and distance calculation from events',
+            '-Event Interaction - Mark events as "Interested" or "Going" with mutual exclusivity, visual feedback, and instant status updates',
+            '-Event Details - Dedicated activity showing full event info with external ticket purchase confirmation',
+            '-Real-time Sync - Event statuses saved to Firestore users  collection, synced with MyInterests tab via snapshot listeners'
           ]
         }
       ]
@@ -123,7 +143,11 @@ export default function Contributions() {
           version: 'Final Release',
           date: 'Dec 2, 2025',
           tasks: [
-            'Coming soon!',
+            '-Profile Management - Upload/change profile photo using Camera (with permission request) or Gallery picker',
+            '-Image Storage - Upload to Firebase Storage, store download URL in Firestore with timestamp query parameter for cache invalidation',
+            '-Account Security - Password reset via Firebase Auth sendPasswordResetEmail(), sign out with automatic FCM token cleanup',
+            '-Location Services - One-time location capture on login/registration using FusedLocationProvider, reverse geocoding to city/state/country, stored in Firestore user document',
+            '-Dynamic UI - RecyclerView with SettingsAdapter using sealed class pattern, different layouts for authenticated vs unauthenticated states'
           ]
         }
       ]
