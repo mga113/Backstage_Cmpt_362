@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/navigation_explore"
@@ -14,13 +13,18 @@
         android:title="My Interests" />
 
     <item
+        android:id="@+id/navigation_friends"
+        android:icon="@drawable/ic_person"
+        android:title="Friends" />
+
+    <item
         android:id="@+id/navigation_chat"
         android:icon="@drawable/ic_chat"
         android:title="Chat" />
 
     <item
         android:id="@+id/navigation_my_account"
-        android:icon="@drawable/ic_person"
+        android:icon="@drawable/ic_account_circle"
         android:title="My Account" />
 
 </menu>

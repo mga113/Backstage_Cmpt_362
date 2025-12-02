@@ -23,6 +23,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/navigation_friends"
+        android:name="com.group_12.backstage.ConcertConnect.FindFriendsFragment"
+        android:label="Friends"
+        tools:layout="@layout/fragment_find_friends" />
+
+    <fragment
         android:id="@+id/navigation_chat"
         android:name="com.group_12.backstage.Chat.ChatFragment"
         android:label="Chat" />
