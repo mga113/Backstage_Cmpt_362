@@ -11,13 +11,22 @@ function HeroSection() {
       <p>What are you waiting for?</p>
       <div className='hero-btns'>
 
+             <Button
+          className='btns'
+          buttonStyle='btn--outline'
+          buttonSize='btn--large'
+          href="https://docs.google.com/presentation/d/14j-4DobfFIgM4DRAX5tGMq_uZjTTzA-CUglGf8Y3PDo/edit?usp=sharing"
+        >
+          MVVM + THREADED DIAGRAMS 
+        </Button>
+
         <Button
           className='btns'
           buttonStyle='btn--outline'
           buttonSize='btn--large'
           href="https://github.com/mga113/Backstage_Cmpt_362"
         >
-          Git Repo <i className="fab fa-github" />
+          GIT REPO <i className="fab fa-github" />
 
         </Button>
  
@@ -38,8 +47,12 @@ function HeroSection() {
           buttonSize='btn--large'
           href="https://drive.google.com/file/d/1JduXVMaxffIgsvIrk8AXllGEHY-dA3-j/view?usp=sharing"
         >
-          Download APK <i className='fas fa-download' />
+          DOWNLOAD APK <i className='fas fa-download' />
         </Button>
+
+   
+
+
 
         <Button
           className='btns'
