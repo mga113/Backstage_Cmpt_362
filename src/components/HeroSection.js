@@ -10,12 +10,16 @@ function HeroSection() {
       <h1>WHERE MUSIC MEETS CONNECTION</h1>
       <p>What are you waiting for?</p>
       <div className='hero-btns'>
+ 
         <Button
           className='btns'
           buttonStyle='btn--outline'
           buttonSize='btn--large'
+          href="https://drive.google.com/file/d/1dMU_8gM8ZAYHUXgorVxciqKGa0eRhVfl/view?usp=sharing
+"
         >
           ZIPPED CODE <i className='fas fa-download' />
+
         </Button>
 
         <Button
@@ -38,7 +42,9 @@ function HeroSection() {
 
         <Button
           className='btns'
+          buttonStyle='btn--outline'
           buttonSize='btn--large'
+          href="https://drive.google.com/file/d/14Ei3tO2NENfyDNboRIQ0_f-jHyf7nZ3s/view"
         >
           Download APK <i className='fas fa-download' />
         </Button>
@@ -48,3 +54,5 @@ function HeroSection() {
 }
 
 export default HeroSection;
+
+
