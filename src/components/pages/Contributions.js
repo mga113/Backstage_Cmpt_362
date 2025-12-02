@@ -20,14 +20,19 @@ export default function Contributions() {
           version: 'Show and Tell 2.0',
           date: 'Nov 20, 2025',
           tasks: [
-            'Coming soon!',
+            '- Implemented Firestore for automatic data updates across devices.',
+            '- Built a dual-layer filter system combining text search (title/location/date) with status chips.',
+            '- Enabled direct status switching between "Going" and "Interested". ',
+            '- Integrated swipe-to-delete functionality with "Undo" Snackbar support.',
+            '- Implemented direct addition of events to the native Calendar.',
+            '- Implemented sharing details of events via external apps.'
           ]
         },
         {
           version: 'Final Release',
           date: 'Dec 2, 2025',
           tasks: [
-            'Coming soon!',
+        
           ]
         }
       ]
@@ -47,7 +52,13 @@ export default function Contributions() {
           version: 'Show and Tell 2.0',
           date: 'Nov 20, 2025',
           tasks: [
-            'Coming soon!',
+            '- Implemented real-time chat messaging across app users using Firestore.',
+            '- Developed a direct messaging UI with distinct sender and receiver message formatting.',
+            '- Created intuitive login and registration interfaces.',
+            '- Integrated full Firebase Authentication for secure user management.',
+            '- Built a project website using ReactJS, including all essential information, and deployed it on Vercel.'
+
+,
           ]
         },
         {
@@ -75,7 +86,9 @@ export default function Contributions() {
           version: 'Show and Tell 2.0',
           date: 'Nov 20, 2025',
           tasks: [
-            'Coming soon!',
+            '-Implemented live search that filters concerts by artist, event name, venue, and location as the user types.',
+            '-Added genre filtering and date-range filtering, combining all filters into a dynamic query builder.',
+            '- Connected Explore → My Interests by saving “Interested/Going” events to Firestore, enabling real-time syncing with MyInterestsFragment through snapshot listeners.'
           ]
         },
         {
@@ -102,7 +115,8 @@ export default function Contributions() {
           version: 'Show and Tell 2.0',
           date: 'Nov 20, 2025',
           tasks: [
-            'Coming soon!',
+            '- Built complete MyAccount module with Firebase Authentication, Firestore user data, and full settings functionality.',
+            '- Designed Ticketmaster-style UI with real-time Firestore sync using ViewModel + StateFlow architecture.'
           ]
         },
         {

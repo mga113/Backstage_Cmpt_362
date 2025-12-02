@@ -12,6 +12,15 @@ export default function Diagrams() {
           alt="System Architecture"
           className="diagram-img"
         />
+      </div>
+
+      <h1 className="diagrams-heading">Thread Diagram</h1>
+      <div className="diagrams-content">
+        <img
+          src="/images/thread_diagram.png"
+          alt="thread diagram"
+          className="diagram-img"
+        />
       
       </div>
     </section>

@@ -24,7 +24,7 @@ function HeroSection() {
           buttonSize='btn--large'
           href="https://youtu.be/Zx8qAwGfUdA"
         >
-          WATCH PITCH <i className='far fa-play-circle' />
+          ORIGINAL PITCH <i className='far fa-play-circle' />
         </Button>
 
         <Button
