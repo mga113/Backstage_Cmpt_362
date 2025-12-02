@@ -40,6 +40,18 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- Add this TextView for the message preview -->
+        <TextView
+            android:id="@+id/lastMessagePreviewTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Last message preview..."
+            android:textColor="#B0B0B0"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
     </LinearLayout>
 
     <View
@@ -48,8 +60,7 @@
         android:layout_height="10dp"
         android:background="@drawable/unread_blue_dot_icon"
         android:layout_marginStart="8dp"
-        android:layout_gravity="center_vertical"/>
-
-
+        android:layout_gravity="center_vertical"
+        android:visibility="gone"/> <!-- Default to gone -->
 
 </LinearLayout>

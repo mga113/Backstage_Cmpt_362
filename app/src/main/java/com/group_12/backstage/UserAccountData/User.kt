@@ -12,5 +12,6 @@ data class User(
     val country: String = "",
     val locationBasedContent: Boolean = false,
     var lastMessageTimestamp: Long = 0L,
-    var unread: Boolean = false // Add this line
+    var unread: Boolean = false,
+    var lastMessagePreview: String = "" // Add this line
 )

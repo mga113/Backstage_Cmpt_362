@@ -149,6 +149,7 @@ class DirectMessageActivity : AppCompatActivity() {
                 val chatUpdates = mapOf(
                     "lastMessageTimestamp" to timestamp,
                     "lastMessageSenderId" to senderId,
+                    "lastMessageText" to message, // Add this for the preview
                     "isRead_${receiverId}" to false, // Mark as unread for the receiver
                     "isRead_${senderId}" to true      // Mark as read for the sender
                 )
